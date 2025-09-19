@@ -1,0 +1,60 @@
+<%= search_form_for @search, url: admin_vendors_path, local: true do |f| %>
+  <div class="card-header filters">
+    <div class="row align-items-center">
+      <div class="col-md-3">
+        <%= f.search_field :name_or_business_name_cont, 
+                          placeholder: Spree.t('admin.vendors.search_name_placeholder'),
+                          class: 'form-control',
+                          value: params.dig(:q, :name_or_business_name_cont) %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= f.select :state_eq, 
+                     options_for_select([
+                       [Spree.t('admin.vendors.all_states'), ''],
+                       [Spree.t('admin.vendors.states.pending'), 'pending'],
+                       [Spree.t('admin.vendors.states.active'), 'active'], 
+                       [Spree.t('admin.vendors.states.suspended'), 'suspended'],
+                       [Spree.t('admin.vendors.states.blocked'), 'blocked'],
+                       [Spree.t('admin.vendors.states.rejected'), 'rejected']
+                     ], params.dig(:q, :state_eq)),
+                     {}, 
+                     { class: 'form-control' } %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= f.select :vendor_profile_verification_status_eq,
+                     options_for_select([
+                       [Spree.t('admin.vendors.all_verification_statuses'), ''],
+                       [Spree.t('admin.vendors.verification_statuses.unverified'), 'unverified'],
+                       [Spree.t('admin.vendors.verification_statuses.pending_verification'), 'pending_verification'],
+                       [Spree.t('admin.vendors.verification_statuses.verified'), 'verified'],
+                       [Spree.t('admin.vendors.verification_statuses.rejected'), 'rejected']
+                     ], params.dig(:q, :vendor_profile_verification_status_eq)),
+                     {},
+                     { class: 'form-control' } %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= f.date_field :created_at_gteq,
+                        placeholder: Spree.t('admin.vendors.created_after'),
+                        class: 'form-control',
+                        value: params.dig(:q, :created_at_gteq) %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= f.date_field :created_at_lteq,
+                        placeholder: Spree.t('admin.vendors.created_before'), 
+                        class: 'form-control',
+                        value: params.dig(:q, :created_at_lteq) %>
+      </div>
+      
+      <div class="col-md-1">
+        <div class="d-flex gap-2">
+          <%= f.submit Spree.t('admin.search'), class: 'btn btn-primary' %>
+          <%= link_to Spree.t('admin.clear'), admin_vendors_path, class: 'btn btn-outline-secondary' %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

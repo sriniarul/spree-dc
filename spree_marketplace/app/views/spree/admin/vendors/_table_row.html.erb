@@ -1,0 +1,190 @@
+<tr id="<%= dom_id(vendor) %>" class="<%= 'table-warning' if vendor.pending? %>">
+  <td class="align-middle">
+    <%= check_box_tag "vendor_ids[]", vendor.id, false,
+                      data: {
+                        bulk_select_target: 'checkbox',
+                        action: 'change->bulk-select#updateSelectAll'
+                      },
+                      class: 'form-check-input' %>
+  </td>
+  
+  <td class="align-middle">
+    <% if vendor.image.present? %>
+      <%= image_tag vendor.image.url(:mini), 
+                    alt: vendor.name,
+                    class: 'img-thumbnail vendor-logo',
+                    style: 'width: 40px; height: 40px; object-fit: cover;' %>
+    <% else %>
+      <div class="vendor-logo-placeholder bg-light d-flex align-items-center justify-content-center"
+           style="width: 40px; height: 40px; border: 1px solid #dee2e6;">
+        <i class="fa fa-store text-muted"></i>
+      </div>
+    <% end %>
+  </td>
+  
+  <td class="align-middle">
+    <div>
+      <strong>
+        <%= link_to vendor.name, admin_vendor_path(vendor), class: 'text-decoration-none' %>
+      </strong>
+      <% if vendor.tags.any? %>
+        <div class="mt-1">
+          <% vendor.tags.limit(3).each do |tag| %>
+            <span class="badge badge-secondary badge-sm"><%= tag.name %></span>
+          <% end %>
+          <% if vendor.tags.count > 3 %>
+            <span class="text-muted small">+<%= vendor.tags.count - 3 %> more</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </td>
+  
+  <td class="align-middle">
+    <%= vendor.vendor_profile&.business_name || '-' %>
+  </td>
+  
+  <td class="align-middle">
+    <div>
+      <%= vendor.contact_email %>
+      <% if vendor.phone.present? %>
+        <br>
+        <small class="text-muted"><%= vendor.phone %></small>
+      <% end %>
+    </div>
+  </td>
+  
+  <td class="align-middle">
+    <%= render 'shared/vendor_status_badge', vendor: vendor %>
+  </td>
+  
+  <td class="align-middle">
+    <% if vendor.vendor_profile %>
+      <%= render 'shared/verification_status_badge', vendor_profile: vendor.vendor_profile %>
+    <% else %>
+      <span class="badge badge-secondary">
+        <%= Spree.t('admin.vendors.no_profile') %>
+      </span>
+    <% end %>
+  </td>
+  
+  <td class="align-middle">
+    <% if vendor.vendor_profile&.commission_rate %>
+      <span class="text-primary">
+        <%= number_to_percentage(vendor.vendor_profile.commission_rate * 100, precision: 1) %>
+      </span>
+    <% else %>
+      <span class="text-muted">
+        <%= number_to_percentage(SpreeMarketplace.configuration.default_commission_rate * 100, precision: 1) %>
+      </span>
+    <% end %>
+  </td>
+  
+  <td class="align-middle">
+    <div>
+      <span class="text-primary"><%= vendor.products.count %></span>
+      <% if vendor.products.available.count < vendor.products.count %>
+        <br>
+        <small class="text-success">
+          <%= vendor.products.available.count %> <%= Spree.t('admin.vendors.active') %>
+        </small>
+      <% end %>
+    </div>
+  </td>
+  
+  <td class="align-middle">
+    <div>
+      <%= l vendor.created_at.to_date, format: :short %>
+      <br>
+      <small class="text-muted">
+        <%= time_ago_in_words(vendor.created_at) %> <%= Spree.t('admin.ago') %>
+      </small>
+    </div>
+  </td>
+  
+  <td class="align-middle actions-column">
+    <div class="d-flex gap-1">
+      <%= link_to admin_vendor_path(vendor), 
+                  class: 'btn btn-sm btn-outline-primary',
+                  title: Spree.t('admin.show') do %>
+        <i class="fa fa-eye"></i>
+      <% end %>
+      
+      <% if can?(:edit, vendor) %>
+        <%= link_to edit_admin_vendor_path(vendor),
+                    class: 'btn btn-sm btn-outline-secondary',
+                    title: Spree.t('admin.edit') do %>
+          <i class="fa fa-edit"></i>
+        <% end %>
+      <% end %>
+      
+      <% if can?(:manage, vendor) %>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                  type="button" 
+                  data-bs-toggle="dropdown">
+            <i class="fa fa-cog"></i>
+          </button>
+          <ul class="dropdown-menu">
+            <% if vendor.can_activate? %>
+              <li>
+                <%= link_to admin_vendor_activate_path(vendor),
+                            method: :patch,
+                            data: { 
+                              confirm: Spree.t('admin.vendors.activate_confirmation', name: vendor.name),
+                              turbo_method: :patch
+                            },
+                            class: 'dropdown-item text-success' do %>
+                  <i class="fa fa-check"></i> <%= Spree.t('admin.vendors.activate') %>
+                <% end %>
+              </li>
+            <% end %>
+            
+            <% if vendor.can_suspend? %>
+              <li>
+                <%= link_to admin_vendor_suspend_path(vendor),
+                            method: :patch,
+                            data: { 
+                              confirm: Spree.t('admin.vendors.suspend_confirmation', name: vendor.name),
+                              turbo_method: :patch
+                            },
+                            class: 'dropdown-item text-warning' do %>
+                  <i class="fa fa-pause"></i> <%= Spree.t('admin.vendors.suspend') %>
+                <% end %>
+              </li>
+            <% end %>
+            
+            <% if vendor.can_block? %>
+              <li>
+                <%= link_to admin_vendor_block_path(vendor),
+                            method: :patch,
+                            data: { 
+                              confirm: Spree.t('admin.vendors.block_confirmation', name: vendor.name),
+                              turbo_method: :patch
+                            },
+                            class: 'dropdown-item text-danger' do %>
+                  <i class="fa fa-ban"></i> <%= Spree.t('admin.vendors.block') %>
+                <% end %>
+              </li>
+            <% end %>
+            
+            <% if can?(:destroy, vendor) && vendor.can_be_deleted? %>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <%= link_to admin_vendor_path(vendor),
+                            method: :delete,
+                            data: { 
+                              confirm: Spree.t('admin.vendors.delete_confirmation', name: vendor.name),
+                              turbo_method: :delete
+                            },
+                            class: 'dropdown-item text-danger' do %>
+                  <i class="fa fa-trash"></i> <%= Spree.t('admin.delete') %>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  </td>
+</tr>

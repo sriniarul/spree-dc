@@ -1,0 +1,53 @@
+<tr>
+  <th class="align-middle">
+    <%= bulk_admin_form do %>
+      <%= check_box_tag 'select_all_vendors', '', false, 
+                        data: { 
+                          controller: 'bulk-select',
+                          bulk_select_target: 'selectAll',
+                          action: 'change->bulk-select#toggleAll'
+                        },
+                        class: 'form-check-input' %>
+    <% end %>
+  </th>
+  
+  <th class="align-middle">
+    <%= Spree.t('admin.vendors.logo') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= sort_link @search, :name, Spree.t('admin.vendors.name') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= Spree.t('admin.vendors.business_name') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= sort_link @search, :contact_email, Spree.t('admin.vendors.email') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= sort_link @search, :state, Spree.t('admin.vendors.status') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= Spree.t('admin.vendors.verification_status') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= Spree.t('admin.vendors.commission_rate') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= Spree.t('admin.vendors.products_count') %>
+  </th>
+  
+  <th class="align-middle">
+    <%= sort_link @search, :created_at, Spree.t('admin.vendors.created_at') %>
+  </th>
+  
+  <th class="align-middle actions-column">
+    <%= Spree.t('admin.actions') %>
+  </th>
+</tr>

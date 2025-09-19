@@ -1,0 +1,359 @@
+<% content_for :page_actions do %>
+  <% if can?(:edit, @vendor) %>
+    <%= link_to_with_icon 'edit', 
+                          Spree.t('admin.edit'), 
+                          edit_admin_vendor_path(@vendor), 
+                          class: 'btn btn-primary' %>
+  <% end %>
+  
+  <% if can?(:manage, @vendor) %>
+    <div class="btn-group">
+      <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+        <%= Spree.t('admin.actions') %>
+      </button>
+      <ul class="dropdown-menu">
+        <% if @vendor.can_activate? %>
+          <li>
+            <%= link_to admin_vendor_activate_path(@vendor),
+                        method: :patch,
+                        data: { 
+                          confirm: Spree.t('admin.vendors.activate_confirmation', name: @vendor.name),
+                          turbo_method: :patch
+                        },
+                        class: 'dropdown-item text-success' do %>
+              <i class="fa fa-check"></i> <%= Spree.t('admin.vendors.activate') %>
+            <% end %>
+          </li>
+        <% end %>
+        
+        <% if @vendor.can_suspend? %>
+          <li>
+            <%= link_to admin_vendor_suspend_path(@vendor),
+                        method: :patch,
+                        data: { 
+                          confirm: Spree.t('admin.vendors.suspend_confirmation', name: @vendor.name),
+                          turbo_method: :patch
+                        },
+                        class: 'dropdown-item text-warning' do %>
+              <i class="fa fa-pause"></i> <%= Spree.t('admin.vendors.suspend') %>
+            <% end %>
+          </li>
+        <% end %>
+        
+        <% if @vendor.can_block? %>
+          <li>
+            <%= link_to admin_vendor_block_path(@vendor),
+                        method: :patch,
+                        data: { 
+                          confirm: Spree.t('admin.vendors.block_confirmation', name: @vendor.name),
+                          turbo_method: :patch
+                        },
+                        class: 'dropdown-item text-danger' do %>
+              <i class="fa fa-ban"></i> <%= Spree.t('admin.vendors.block') %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  
+  <%= link_to_with_icon 'arrow-left', 
+                        Spree.t('admin.back_to_list'), 
+                        admin_vendors_path, 
+                        class: 'btn btn-outline-secondary' %>
+<% end %>
+
+<div class="row">
+  <!-- Main Vendor Information -->
+  <div class="col-lg-8">
+    <!-- Vendor Overview Card -->
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center">
+        <% if @vendor.image.present? %>
+          <%= image_tag @vendor.image.url(:mini), 
+                       alt: @vendor.name,
+                       class: 'img-thumbnail me-3',
+                       style: 'width: 60px; height: 60px; object-fit: cover;' %>
+        <% end %>
+        
+        <div>
+          <h4 class="card-title mb-1"><%= @vendor.name %></h4>
+          <div class="d-flex gap-2">
+            <%= render 'shared/vendor_status_badge', vendor: @vendor %>
+            <% if @vendor.vendor_profile %>
+              <%= render 'shared/verification_status_badge', vendor_profile: @vendor.vendor_profile %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <dl class="row">
+              <dt class="col-sm-4"><%= Spree.t('admin.vendors.email') %></dt>
+              <dd class="col-sm-8">
+                <%= mail_to @vendor.contact_email %>
+                <% if @vendor.notification_email.present? && @vendor.notification_email != @vendor.contact_email %>
+                  <br><small class="text-muted">
+                    Notifications: <%= @vendor.notification_email %>
+                  </small>
+                <% end %>
+              </dd>
+              
+              <% if @vendor.phone.present? %>
+                <dt class="col-sm-4"><%= Spree.t('admin.vendors.phone') %></dt>
+                <dd class="col-sm-8"><%= @vendor.phone %></dd>
+              <% end %>
+              
+              <dt class="col-sm-4"><%= Spree.t('admin.vendors.created_at') %></dt>
+              <dd class="col-sm-8">
+                <%= l @vendor.created_at, format: :long %>
+                <br><small class="text-muted">
+                  <%= time_ago_in_words(@vendor.created_at) %> ago
+                </small>
+              </dd>
+            </dl>
+          </div>
+          
+          <div class="col-md-6">
+            <% if @vendor.vendor_profile %>
+              <dl class="row">
+                <dt class="col-sm-5"><%= Spree.t('admin.vendors.business_name') %></dt>
+                <dd class="col-sm-7"><%= @vendor.vendor_profile.business_name %></dd>
+                
+                <dt class="col-sm-5"><%= Spree.t('admin.vendors.business_type') %></dt>
+                <dd class="col-sm-7">
+                  <%= Spree.t("admin.vendors.business_types.#{@vendor.vendor_profile.business_type}") %>
+                </dd>
+                
+                <dt class="col-sm-5"><%= Spree.t('admin.vendors.commission_rate') %></dt>
+                <dd class="col-sm-7">
+                  <span class="text-primary">
+                    <%= number_to_percentage(@vendor.commission_rate * 100, precision: 1) %>
+                  </span>
+                </dd>
+                
+                <dt class="col-sm-5"><%= Spree.t('admin.vendors.payout_schedule') %></dt>
+                <dd class="col-sm-7">
+                  <%= Spree.t("admin.vendors.payout_schedules.#{@vendor.vendor_profile.payout_schedule}") %>
+                </dd>
+              </dl>
+            <% end %>
+          </div>
+        </div>
+        
+        <% if @vendor.about_us.present? %>
+          <hr>
+          <div>
+            <h6><%= Spree.t('admin.vendors.about_us') %></h6>
+            <div class="text-muted">
+              <%= simple_format(@vendor.about_us) %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Performance Metrics Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">
+          <%= Spree.t('admin.vendors.performance_metrics') %>
+        </h5>
+      </div>
+      
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3 class="text-primary mb-1"><%= @products_count %></h3>
+              <p class="text-muted mb-0"><%= Spree.t('admin.vendors.total_products') %></p>
+              <small class="text-success">
+                <%= @active_products_count %> <%= Spree.t('admin.vendors.active') %>
+              </small>
+            </div>
+          </div>
+          
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3 class="text-success mb-1">
+                <%= number_to_currency(@vendor.total_sales) %>
+              </h3>
+              <p class="text-muted mb-0"><%= Spree.t('admin.vendors.total_sales') %></p>
+            </div>
+          </div>
+          
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3 class="text-info mb-1">
+                <%= number_to_currency(@commission_total) %>
+              </h3>
+              <p class="text-muted mb-0"><%= Spree.t('admin.vendors.total_commission') %></p>
+            </div>
+          </div>
+          
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3 class="text-warning mb-1">
+                <%= number_to_currency(@payout_total) %>
+              </h3>
+              <p class="text-muted mb-0"><%= Spree.t('admin.vendors.total_payouts') %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <% if @recent_orders.any? %>
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            <%= Spree.t('admin.vendors.recent_orders') %>
+          </h5>
+          <%= link_to Spree.t('admin.vendors.view_all_orders'), 
+                     admin_orders_path(q: { vendor_id_eq: @vendor.id }), 
+                     class: 'btn btn-sm btn-outline-primary' %>
+        </div>
+        
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th><%= Spree.t('admin.orders.order_number') %></th>
+                  <th><%= Spree.t('admin.orders.customer') %></th>
+                  <th><%= Spree.t('admin.orders.total') %></th>
+                  <th><%= Spree.t('admin.orders.state') %></th>
+                  <th><%= Spree.t('admin.orders.completed_at') %></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @recent_orders.each do |order| %>
+                  <tr>
+                    <td>
+                      <%= link_to order.number, admin_order_path(order) %>
+                    </td>
+                    <td><%= order.email %></td>
+                    <td><%= order.display_total %></td>
+                    <td>
+                      <span class="badge badge-<%= order.state == 'complete' ? 'success' : 'warning' %>">
+                        <%= order.state.humanize %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= l order.completed_at.to_date if order.completed_at %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  
+  <!-- Sidebar -->
+  <div class="col-lg-4">
+    <!-- Quick Actions Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">
+          <%= Spree.t('admin.vendors.quick_actions') %>
+        </h5>
+      </div>
+      
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to admin_vendor_products_path(@vendor), 
+                     class: 'btn btn-outline-primary' do %>
+            <i class="fa fa-box"></i> <%= Spree.t('admin.vendors.manage_products') %>
+            <span class="badge badge-secondary float-end"><%= @products_count %></span>
+          <% end %>
+          
+          <%= link_to admin_vendor_vendor_profile_path(@vendor, @vendor.vendor_profile || 0), 
+                     class: 'btn btn-outline-secondary' do %>
+            <i class="fa fa-building"></i> <%= Spree.t('admin.vendors.business_profile') %>
+          <% end %>
+          
+          <%= link_to admin_vendor_analytics_path(@vendor), 
+                     class: 'btn btn-outline-info' do %>
+            <i class="fa fa-chart-line"></i> <%= Spree.t('admin.vendors.analytics') %>
+          <% end %>
+          
+          <%= link_to admin_vendor_payouts_path(@vendor), 
+                     class: 'btn btn-outline-success' do %>
+            <i class="fa fa-dollar-sign"></i> <%= Spree.t('admin.vendors.payouts') %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Verification Status Card -->
+    <% if @vendor.vendor_profile %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title">
+            <%= Spree.t('admin.vendors.verification_status') %>
+          </h5>
+        </div>
+        
+        <div class="card-body" id="verification_status">
+          <%= render 'shared/verification_status_card', vendor_profile: @vendor.vendor_profile %>
+        </div>
+      </div>
+    <% end %>
+    
+    <!-- Contact Information Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">
+          <%= Spree.t('admin.vendors.contact_information') %>
+        </h5>
+      </div>
+      
+      <div class="card-body">
+        <% if @vendor.contact_us.present? %>
+          <%= simple_format(@vendor.contact_us) %>
+        <% else %>
+          <p class="text-muted">
+            <%= Spree.t('admin.vendors.no_contact_info') %>
+          </p>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Tags Card -->
+    <% if @vendor.tags.any? || @vendor.categories.any? %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title">
+            <%= Spree.t('admin.vendors.tags_and_categories') %>
+          </h5>
+        </div>
+        
+        <div class="card-body">
+          <% if @vendor.categories.any? %>
+            <div class="mb-2">
+              <small class="text-muted d-block"><%= Spree.t('admin.vendors.categories') %></small>
+              <% @vendor.categories.each do |category| %>
+                <span class="badge badge-primary me-1"><%= category.name %></span>
+              <% end %>
+            </div>
+          <% end %>
+          
+          <% if @vendor.tags.any? %>
+            <div>
+              <small class="text-muted d-block"><%= Spree.t('admin.vendors.tags') %></small>
+              <% @vendor.tags.each do |tag| %>
+                <span class="badge badge-secondary me-1"><%= tag.name %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

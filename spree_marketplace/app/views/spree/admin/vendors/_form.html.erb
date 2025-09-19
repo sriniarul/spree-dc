@@ -1,0 +1,260 @@
+<!-- Basic Information Card -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.vendors.basic_information') %>
+    </h5>
+  </div>
+  
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.spree_text_field :name, 
+                              required: true,
+                              help: Spree.t('admin.vendors.name_help') %>
+      </div>
+      
+      <div class="col-md-6">
+        <%= f.spree_text_field :contact_email,
+                              required: true,
+                              type: :email,
+                              help: Spree.t('admin.vendors.contact_email_help') %>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.spree_text_field :notification_email,
+                              type: :email,
+                              help: Spree.t('admin.vendors.notification_email_help') %>
+      </div>
+      
+      <div class="col-md-6">
+        <%= f.spree_text_field :phone,
+                              help: Spree.t('admin.vendors.phone_help') %>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.spree_number_field :priority,
+                                min: 0,
+                                help: Spree.t('admin.vendors.priority_help') %>
+      </div>
+      
+      <div class="col-md-6">
+        <% if @vendor.persisted? %>
+          <div class="form-group">
+            <%= label_tag :state, Spree.t('admin.vendors.status') %>
+            <div class="mt-2">
+              <%= render 'shared/vendor_status_badge', vendor: @vendor %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Content Card -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.vendors.content') %>
+    </h5>
+  </div>
+  
+  <div class="card-body">
+    <%= f.spree_rich_text_area :about_us,
+                              rows: 4,
+                              help: Spree.t('admin.vendors.about_us_help') %>
+    
+    <%= f.spree_rich_text_area :contact_us,
+                              rows: 3,
+                              help: Spree.t('admin.vendors.contact_us_help') %>
+  </div>
+</div>
+
+<!-- Logo Card -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.vendors.logo') %>
+    </h5>
+  </div>
+  
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.fields_for :image, (@vendor.image || @vendor.build_image) do |image_form| %>
+          <%= image_form.spree_file_field :attachment,
+                                         accept: 'image/*',
+                                         help: Spree.t('admin.vendors.logo_help') %>
+          
+          <% if @vendor.image&.attachment&.attached? %>
+            <div class="mt-3">
+              <%= image_tag @vendor.image.url(:product), 
+                           alt: @vendor.name,
+                           class: 'img-thumbnail',
+                           style: 'max-width: 200px; max-height: 150px;' %>
+              
+              <%= image_form.spree_check_box :_destroy,
+                                           label: Spree.t('admin.vendors.remove_logo') %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="alert alert-info">
+          <h6><%= Spree.t('admin.vendors.logo_guidelines') %></h6>
+          <ul class="mb-0">
+            <li><%= Spree.t('admin.vendors.logo_guideline_1') %></li>
+            <li><%= Spree.t('admin.vendors.logo_guideline_2') %></li>
+            <li><%= Spree.t('admin.vendors.logo_guideline_3') %></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Business Profile Card -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.vendors.business_profile') %>
+    </h5>
+  </div>
+  
+  <div class="card-body">
+    <%= f.fields_for :vendor_profile, (@vendor.vendor_profile || @vendor.build_vendor_profile) do |profile_form| %>
+      <div class="row">
+        <div class="col-md-6">
+          <%= profile_form.spree_text_field :business_name,
+                                          required: true,
+                                          help: Spree.t('admin.vendors.business_name_help') %>
+        </div>
+        
+        <div class="col-md-6">
+          <%= profile_form.spree_select :business_type,
+                                       options_for_select(
+                                         Spree::VendorProfile.business_types.map do |key, value|
+                                           [Spree.t("admin.vendors.business_types.#{key}"), key]
+                                         end,
+                                         @vendor.vendor_profile&.business_type
+                                       ),
+                                       { include_blank: Spree.t('admin.vendors.select_business_type') },
+                                       { required: true } %>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <%= profile_form.spree_text_field :tax_id,
+                                          required: true,
+                                          help: Spree.t('admin.vendors.tax_id_help') %>
+        </div>
+        
+        <div class="col-md-6">
+          <%= profile_form.spree_text_field :business_license_number,
+                                          help: Spree.t('admin.vendors.license_help') %>
+        </div>
+      </div>
+      
+      <!-- Commission Settings -->
+      <div class="row">
+        <div class="col-md-4">
+          <%= profile_form.spree_number_field :commission_rate,
+                                            step: 0.01,
+                                            min: 0.05,
+                                            max: 0.50,
+                                            value: (@vendor.vendor_profile&.commission_rate || SpreeMarketplace.configuration.default_commission_rate),
+                                            help: Spree.t('admin.vendors.commission_rate_help') %>
+        </div>
+        
+        <div class="col-md-4">
+          <%= profile_form.spree_select :payout_schedule,
+                                       options_for_select(
+                                         Spree::VendorProfile.payout_schedules.map do |key, value|
+                                           [Spree.t("admin.vendors.payout_schedules.#{key}"), key]
+                                         end,
+                                         @vendor.vendor_profile&.payout_schedule
+                                       ),
+                                       { include_blank: false } %>
+        </div>
+        
+        <div class="col-md-4">
+          <%= profile_form.spree_select :verification_status,
+                                       options_for_select(
+                                         Spree::VendorProfile.verification_statuses.map do |key, value|
+                                           [Spree.t("admin.vendors.verification_statuses.#{key}"), key]
+                                         end,
+                                         @vendor.vendor_profile&.verification_status
+                                       ),
+                                       { include_blank: false } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Tags Card -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.vendors.categorization') %>
+    </h5>
+  </div>
+  
+  <div class="card-body">
+    <div class="form-group">
+      <%= label_tag :vendor_category_list, Spree.t('admin.vendors.categories') %>
+      <%= text_field_tag :vendor_category_list, 
+                        @vendor.category_list.join(', '),
+                        class: 'form-control',
+                        placeholder: Spree.t('admin.vendors.categories_placeholder'),
+                        data: {
+                          controller: 'tag-input',
+                          tag_input_source_value: admin_vendor_categories_path(format: :json)
+                        } %>
+      <small class="form-text text-muted">
+        <%= Spree.t('admin.vendors.categories_help') %>
+      </small>
+    </div>
+    
+    <div class="form-group">
+      <%= label_tag :vendor_tag_list, Spree.t('admin.vendors.tags') %>
+      <%= text_field_tag :vendor_tag_list, 
+                        @vendor.tag_list.join(', '),
+                        class: 'form-control',
+                        placeholder: Spree.t('admin.vendors.tags_placeholder'),
+                        data: {
+                          controller: 'tag-input',
+                          tag_input_source_value: admin_vendor_tags_path(format: :json)
+                        } %>
+      <small class="form-text text-muted">
+        <%= Spree.t('admin.vendors.tags_help') %>
+      </small>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Notes Card -->
+<% if can?(:manage, @vendor) %>
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.vendors.admin_notes') %>
+    </h5>
+  </div>
+  
+  <div class="card-body">
+    <%= f.fields_for :vendor_profile, (@vendor.vendor_profile || @vendor.build_vendor_profile) do |profile_form| %>
+      <%= profile_form.spree_text_area :notes,
+                                      rows: 3,
+                                      help: Spree.t('admin.vendors.admin_notes_help') %>
+    <% end %>
+  </div>
+</div>
+<% end %>

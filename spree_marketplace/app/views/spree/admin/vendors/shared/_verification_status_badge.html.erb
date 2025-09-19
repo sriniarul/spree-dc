@@ -1,0 +1,26 @@
+<% case vendor_profile.verification_status
+   when 'verified' %>
+  <span class="badge badge-success">
+    <i class="fa fa-shield-alt"></i> <%= Spree.t('admin.vendors.verification_statuses.verified') %>
+  </span>
+<% when 'pending_verification' %>
+  <span class="badge badge-warning">
+    <i class="fa fa-hourglass-half"></i> <%= Spree.t('admin.vendors.verification_statuses.pending_verification') %>
+  </span>
+<% when 'partially_verified' %>
+  <span class="badge badge-info">
+    <i class="fa fa-check-circle"></i> <%= Spree.t('admin.vendors.verification_statuses.partially_verified') %>
+  </span>
+<% when 'rejected' %>
+  <span class="badge badge-danger">
+    <i class="fa fa-times-circle"></i> <%= Spree.t('admin.vendors.verification_statuses.rejected') %>
+  </span>
+<% when 'requires_update' %>
+  <span class="badge badge-secondary">
+    <i class="fa fa-exclamation-triangle"></i> <%= Spree.t('admin.vendors.verification_statuses.requires_update') %>
+  </span>
+<% else %>
+  <span class="badge badge-light">
+    <i class="fa fa-question-circle"></i> <%= Spree.t('admin.vendors.verification_statuses.unverified') %>
+  </span>
+<% end %>

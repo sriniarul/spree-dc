@@ -1,0 +1,26 @@
+<% case vendor.state
+   when 'active' %>
+  <span class="badge badge-success">
+    <i class="fa fa-check-circle"></i> <%= Spree.t('admin.vendors.states.active') %>
+  </span>
+<% when 'pending' %>
+  <span class="badge badge-warning">
+    <i class="fa fa-clock"></i> <%= Spree.t('admin.vendors.states.pending') %>
+  </span>
+<% when 'suspended' %>
+  <span class="badge badge-secondary">
+    <i class="fa fa-pause-circle"></i> <%= Spree.t('admin.vendors.states.suspended') %>
+  </span>
+<% when 'blocked' %>
+  <span class="badge badge-danger">
+    <i class="fa fa-ban"></i> <%= Spree.t('admin.vendors.states.blocked') %>
+  </span>
+<% when 'rejected' %>
+  <span class="badge badge-dark">
+    <i class="fa fa-times-circle"></i> <%= Spree.t('admin.vendors.states.rejected') %>
+  </span>
+<% else %>
+  <span class="badge badge-light">
+    <%= vendor.state.humanize %>
+  </span>
+<% end %>
