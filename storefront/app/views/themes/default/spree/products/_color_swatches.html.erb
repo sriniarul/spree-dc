@@ -8,7 +8,9 @@
 
     <div class="product-card-color-swatches pt-2 flex flex-wrap gap-0.5" data-plp-variant-picker-target="colorsContainer">
       <% color_values.each do |color_value| %>
-        <% selected_variant = variants_with_color.find { |variant| variant.option_values.include?(color_value) } %>
+        <% # Find color-only variant first (for image management), then fallback to color/size variant %>
+        <% selected_variant = product.variants.find { |variant| variant.option_values.count == 1 && variant.option_values.include?(color_value) } %>
+        <% selected_variant ||= variants_with_color.find { |variant| variant.option_values.include?(color_value) } %>
         <% next if selected_variant.blank? %>
 
         <% cache spree_storefront_base_cache_scope.call(selected_variant) do %>
@@ -17,19 +19,33 @@
             class="[&:nth-of-type(n+4)]:hidden [&:nth-of-type(n+4)]:md:block [&:nth-of-type(n+8)]:md:hidden cursor-pointer"
             data-action="mouseenter->plp-variant-picker#handlePreview click->plp-variant-picker#redirectToVariant touch->plp-variant-picker#redirectToVariant"
             data-color="<%= color_value.presentation %>">
-            <% if selected_variant.available? %>
-              <%= render 'spree/products/color_picker',
-                with_name: false,
-                color: color_value.presentation,
-                color_preview_container_class: "lg:w-[28px] lg:h-[28px]",
-                color_preview_class: "lg:top-[2px] lg:left-[2px]" %>
+            <% if selected_variant.default_image.present? %>
+              <!-- Use variant image as thumbnail -->
+              <div class="variant-color-thumbnail <%= 'opacity-50 cursor-not-allowed' unless selected_variant.available? %>">
+                <div class="variant-option border border-gray-300 rounded-lg overflow-hidden hover:border-gray-500 transition-colors duration-200 w-[28px] h-[28px] lg:w-[32px] lg:h-[32px]">
+                  <img
+                    src="<%= main_app.url_for(selected_variant.default_image.attachment.variant(resize_to_fill: [64, 64])) %>"
+                    alt="<%= color_value.presentation %>"
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                    loading="lazy">
+                </div>
+              </div>
             <% else %>
-              <%= render 'spree/products/color_picker',
-                with_name: false,
-                color: color_value.presentation,
-                disabled: true,
-                color_preview_container_class: "lg:w-[28px] lg:h-[28px]",
-                color_preview_class: "lg:top-[2px] lg:left-[2px]" %>
+              <!-- Fallback to color picker when no image -->
+              <% if selected_variant.available? %>
+                <%= render 'spree/products/color_picker',
+                  with_name: false,
+                  color: color_value.presentation,
+                  color_preview_container_class: "lg:w-[28px] lg:h-[28px]",
+                  color_preview_class: "lg:top-[2px] lg:left-[2px]" %>
+              <% else %>
+                <%= render 'spree/products/color_picker',
+                  with_name: false,
+                  color: color_value.presentation,
+                  disabled: true,
+                  color_preview_container_class: "lg:w-[28px] lg:h-[28px]",
+                  color_preview_class: "lg:top-[2px] lg:left-[2px]" %>
+              <% end %>
             <% end %>
             <% if selected_variant.default_image %>
               <template data-featured-image-template>

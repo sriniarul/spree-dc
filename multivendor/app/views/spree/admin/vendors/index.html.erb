@@ -1,0 +1,121 @@
+<% content_for :page_title do %>
+  <%= Spree.t(:vendors) %>
+<% end %>
+
+<% content_for :page_actions do %>
+  <%= link_to_with_icon 'plus', Spree.t(:new_vendor), new_object_url, class: 'btn btn-primary', id: 'new_vendor_link' if can?(:create, Spree::Vendor) %>
+<% end %>
+
+<%= content_for(:page_alerts) do %>
+  <div class="alert alert-info">
+    <%= Spree.t('multivendor.vendors_info') %>
+  </div>
+<% end %>
+
+<% if @vendors.any? %>
+  <div class="table-responsive">
+    <table class="table table-hover" id="listing_vendors">
+          <thead>
+            <tr>
+              <th><%= Spree.t(:legal_name) %></th>
+              <th><%= Spree.t(:business_type) %></th>
+              <th><%= Spree.t(:status) %></th>
+              <th><%= Spree.t(:registration_date) %></th>
+              <th><%= Spree.t(:country) %></th>
+              <th><%= Spree.t(:contact) %></th>
+              <th class="actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @vendors.each do |vendor| %>
+              <tr>
+                <td>
+                  <strong><%= vendor.display_name %></strong>
+                  <% if vendor.trade_name != vendor.legal_name %>
+                    <br><small class="text-muted">(<%= vendor.legal_name %>)</small>
+                  <% end %>
+                  <% if vendor.registration_number.present? %>
+                    <br><small class="text-muted"><%= vendor.registration_number %></small>
+                  <% end %>
+                </td>
+                <td>
+                  <%= vendor.business_type_display %>
+                </td>
+                <td>
+                  <span class="badge badge-<%= vendor_status_class(vendor.state) %>">
+                    <%= vendor.state.titleize %>
+                  </span>
+                </td>
+                <td>
+                  <%= vendor.created_at.strftime('%m/%d/%Y') if vendor.created_at %>
+                  <% if vendor.created_at %>
+                    <br><small class="text-muted"><%= time_ago_in_words(vendor.created_at) %> ago</small>
+                  <% end %>
+                </td>
+                <td>
+                  <%= vendor.country&.name || vendor.country_code %>
+                  <% if vendor.city.present? || vendor.state_province.present? %>
+                    <br><small class="text-muted"><%= vendor.city %>, <%= vendor.state_province %></small>
+                  <% end %>
+                </td>
+                <td>
+                  <% if vendor.user %>
+                    <%= vendor.user.email %><br>
+                    <small class="text-muted"><%= vendor.user.first_name %> <%= vendor.user.last_name %></small>
+                  <% end %>
+                </td>
+                <td class="actions text-end">
+                  <div class="btn-group" role="group">
+                    <%= link_to spree.admin_vendor_path(vendor), class: 'btn btn-sm btn-outline-primary', title: Spree.t(:view), data: { bs_toggle: 'tooltip' } do %>
+                      <%= icon 'eye' %>
+                    <% end %>
+
+                    <% if vendor.pending? %>
+                      <%= button_to spree.approve_admin_vendor_path(vendor),
+                          method: :patch,
+                          class: 'btn btn-sm btn-outline-success',
+                          title: Spree.t(:approve),
+                          data: { confirm: Spree.t(:are_you_sure_approve, vendor: vendor.display_name), bs_toggle: 'tooltip' } do %>
+                        <%= icon 'check' %>
+                      <% end %>
+                      <%= button_to spree.reject_admin_vendor_path(vendor),
+                          method: :patch,
+                          class: 'btn btn-sm btn-outline-danger',
+                          title: Spree.t(:reject),
+                          data: { confirm: Spree.t(:are_you_sure_reject, vendor: vendor.display_name), bs_toggle: 'tooltip' } do %>
+                        <%= icon 'x' %>
+                      <% end %>
+                    <% elsif vendor.approved? %>
+                      <%= button_to spree.suspend_admin_vendor_path(vendor),
+                          method: :patch,
+                          class: 'btn btn-sm btn-outline-warning',
+                          title: Spree.t(:suspend),
+                          data: { confirm: Spree.t(:are_you_sure_suspend, vendor: vendor.display_name), bs_toggle: 'tooltip' } do %>
+                        <%= icon 'ban' %>
+                      <% end %>
+                    <% elsif vendor.suspended? %>
+                      <%= button_to spree.activate_admin_vendor_path(vendor),
+                          method: :patch,
+                          class: 'btn btn-sm btn-outline-success',
+                          title: Spree.t(:activate),
+                          data: { confirm: Spree.t(:are_you_sure_activate, vendor: vendor.display_name), bs_toggle: 'tooltip' } do %>
+                        <%= icon 'check' %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+
+        <% if @vendors.respond_to?(:total_pages) %>
+          <%= paginate @vendors %>
+        <% end %>
+
+  </div>
+<% else %>
+  <div class="alert alert-info">
+    <%= Spree.t(:no_vendors_found) %>
+  </div>
+<% end %>

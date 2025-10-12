@@ -79,6 +79,12 @@ module Spree
       preference :gift_card_batch_web_limit, :integer, default: 500 # number of gift card codes to be generated in the web process, more than this will be generated in a background job
       preference :gift_card_batch_limit, :integer, default: 50_000
 
+      # image compression
+      attr_writer :image_compression
+      def image_compression
+        @image_compression ||= Spree::ImageCompressionConfig.new
+      end
+
       attr_writer :searcher_class
     end
   end

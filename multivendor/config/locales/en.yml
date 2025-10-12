@@ -1,0 +1,201 @@
+en:
+  spree:
+    # Top-level translations used in views
+    vendors: "Vendors"
+    vendor: "Vendor"
+    new_vendor: "New Vendor"
+    no_vendors_found: "No vendors found"
+    legal_name: "Legal Name"
+    business_type: "Business Type"
+    status: "Status"
+    registration_date: "Registration Date"
+    country: "Country"
+    contact: "Contact"
+    actions: "Actions"
+
+    # Vendor actions
+    approve: "Approve"
+    reject: "Reject"
+    suspend: "Suspend"
+    activate: "Activate"
+    view: "View"
+
+    # Confirmation messages for vendor actions
+    are_you_sure_approve: "Are you sure you want to approve %{vendor}?"
+    are_you_sure_reject: "Are you sure you want to reject %{vendor}?"
+    are_you_sure_suspend: "Are you sure you want to suspend %{vendor}?"
+    are_you_sure_activate: "Are you sure you want to activate %{vendor}?"
+
+    # Form-related translations
+    select_business_type: "Select Business Type"
+    select_country: "Select Country"
+    select_user_account: "Select User Account"
+    city: "City"
+
+    # Action translations
+    actions:
+      create: "Create"
+    multivendor:
+      # Page Titles and Headers
+      vendor_registration: "Vendor Registration"
+      become_vendor_title: "Become a Vendor"
+      vendor_registration_subtitle: "Join our marketplace and start selling your products to thousands of customers"
+      registration_success_title: "Registration Successful!"
+
+      # Form Sections
+      account_information: "Account Information"
+      business_information: "Business / Legal Information"
+      business_address: "Business Address"
+      contact_information: "Contact Information"
+
+      # Form Labels and Placeholders
+      legal_name_placeholder: "Enter your registered legal entity name"
+      legal_name_help: "This must match your official business registration documents"
+      registration_number_placeholder: "e.g. CIN, Company Number, Tax ID"
+      registration_number_help: "Your official business registration or tax identification number"
+      trade_name_placeholder: "Your marketplace display name (optional)"
+      trade_name_help: "This will be shown to customers if different from legal name"
+      state_province_placeholder: "State / Province / Region"
+      city_placeholder: "City"
+      postal_code_placeholder: "Postal / ZIP Code"
+      address_line1_placeholder: "Street address, building number"
+      address_line2_placeholder: "Suite, apartment, floor (optional)"
+      phone_number_placeholder: "+1 (555) 123-4567"
+      website_url_placeholder: "https://yourwebsite.com"
+      website_url_help: "Your business website (optional)"
+      select_country: "Select Country"
+
+      # Form Actions
+      submit_registration: "Submit Registration"
+      registration_terms_notice_html: "By submitting this form, you agree to our <a href=\"#\" class=\"text-blue-600 hover:underline\">Terms of Service</a> and <a href=\"#\" class=\"text-blue-600 hover:underline\">Vendor Agreement</a>"
+
+      # Success Page
+      registration_success_message: "Thank you for your interest in becoming a vendor! Your application has been submitted successfully and is now under review."
+      what_happens_next: "What happens next?"
+      next_step_review: "Our team will review your application and verify your business information"
+      next_step_notification: "You'll receive an email notification about your application status within 2-3 business days"
+      next_step_access: "Once approved, you'll get access to your vendor dashboard to start managing products"
+      return_home: "Return to Homepage"
+      questions_contact_html: "Have questions? <a href=\"mailto:support@example.com\" class=\"text-blue-600 hover:underline\">Contact our vendor support team</a>"
+
+      # Flash Messages
+      vendor_registration_success: "Your vendor application has been submitted successfully! You will receive a confirmation email shortly."
+      vendor_registration_failed: "There was a problem with your registration. Please check the form and try again."
+      vendor_registration_disabled: "Vendor registration is currently disabled."
+      vendor_consent_required: "You must agree to the terms and conditions to proceed with registration."
+
+      # Email Subjects
+      vendor_registration_confirmation_subject: "Vendor Registration Confirmation - %{store}"
+      vendor_registration_admin_notification_subject: "New Vendor Registration: %{vendor_name} - %{store}"
+      vendor_approval_notification_subject: "Vendor Application Approved - %{store}"
+      vendor_rejection_notification_subject: "Vendor Application Update - %{store}"
+
+      # Business Types (matching model constants)
+      business_types:
+        sole_proprietorship: "Sole Proprietorship"
+        partnership: "Partnership"
+        private_limited_company: "Private Limited Company"
+        public_limited_company: "Public Limited Company"
+        limited_liability_partnership: "Limited Liability Partnership (LLP)"
+        limited_liability_company: "Limited Liability Company (LLC)"
+        corporation: "Corporation"
+        cooperative: "Cooperative"
+        non_profit_organization: "Non-Profit Organization"
+        other: "Other"
+
+    # Model Validations and Errors
+    activerecord:
+      models:
+        spree/vendor: "Vendor"
+      attributes:
+        spree/vendor:
+          name: "Business Name"
+          legal_name: "Legal Name"
+          business_type: "Business Type"
+          trade_name: "Trade Name / DBA"
+          registration_number: "Registration Number"
+          incorporation_date: "Incorporation Date"
+          country_code: "Country"
+          state_province: "State / Province"
+          city: "City"
+          postal_code: "Postal Code"
+          address_line1: "Address Line 1"
+          address_line2: "Address Line 2"
+          phone_number: "Phone Number"
+          website_url: "Website URL"
+          state: "Status"
+          user_id: "User Account"
+      errors:
+        models:
+          spree/vendor:
+            attributes:
+              incorporation_date:
+                in_future: "cannot be in the future"
+              registration_number:
+                taken_in_country: "is already registered in this country"
+                invalid_format: "must contain only letters, numbers, hyphens, periods, slashes, and spaces"
+              phone_number:
+                invalid: "must be a valid phone number format"
+              website_url:
+                invalid: "must be a valid URL starting with http:// or https://"
+              base:
+                incomplete_registration: "Business registration must be complete before approval"
+
+    # Admin Interface
+    admin:
+      vendors:
+        index:
+          title: "Vendors"
+          new_vendor: "New Vendor"
+          no_vendors: "No vendors found"
+          legal_name: "Legal Name"
+          business_type: "Business Type"
+          status: "Status"
+          registration_date: "Registered"
+          country: "Country"
+          contact: "Contact"
+        show:
+          title: "Vendor Details"
+          business_information: "Business Information"
+          contact_information: "Contact Information"
+          registration_details: "Registration Details"
+          account_information: "Account Information"
+          address_information: "Address Information"
+        filter:
+          legal_name: "Legal Name"
+          status: "Status"
+          business_type: "Business Type"
+          country: "Country"
+        actions:
+          approve: "Approve"
+          reject: "Reject"
+          suspend: "Suspend"
+          activate: "Activate"
+          edit: "Edit"
+          view: "View"
+        create:
+          success: "Vendor has been successfully created."
+          error: "There was an error creating the vendor."
+        update:
+          success: "Vendor has been successfully updated."
+          error: "There was an error updating the vendor."
+        approve:
+          success: "Vendor %{vendor_name} has been approved successfully."
+          error: "There was an error approving the vendor."
+          confirm: "Are you sure you want to approve %{vendor_name}?"
+        reject:
+          success: "Vendor %{vendor_name} has been rejected."
+          error: "There was an error rejecting the vendor."
+          confirm: "Are you sure you want to reject %{vendor_name}?"
+        suspend:
+          success: "Vendor %{vendor_name} has been suspended."
+          error: "There was an error suspending the vendor."
+          confirm: "Are you sure you want to suspend %{vendor_name}?"
+        activate:
+          success: "Vendor %{vendor_name} has been activated."
+          error: "There was an error activating the vendor."
+          confirm: "Are you sure you want to activate %{vendor_name}?"
+        destroy:
+          success: "Vendor has been successfully deleted."
+          error: "There was an error deleting the vendor."
+          confirm: "Are you sure you want to delete %{vendor_name}? This action cannot be undone."

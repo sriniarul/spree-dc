@@ -3,6 +3,7 @@ module Spree
     include Support::ActiveStorage
     include Spree::Metafields
     include Spree::Metadata
+    include Spree::ImageCompression
     if defined?(Spree::Webhooks::HasWebhooks)
       include Spree::Webhooks::HasWebhooks
     end

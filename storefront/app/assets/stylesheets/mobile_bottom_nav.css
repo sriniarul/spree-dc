@@ -1,0 +1,203 @@
+/* Mobile Bottom Navigation Styles - Flipkart Inspired */
+
+/* Mobile Bottom Navigation */
+#mobile-bottom-nav {
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  height: 64px;
+  max-height: 64px;
+  overflow: hidden;
+  transform: translateY(0) !important; /* Always visible - override JS transforms */
+}
+
+/* Navigation container */
+#mobile-bottom-nav .nav-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+/* Navigation items */
+#mobile-bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 8px 4px;
+  text-align: center;
+  color: #6b7280; /* gray-500 */
+  text-decoration: none;
+  transition: all 0.2s ease;
+  min-height: 64px;
+  box-sizing: border-box;
+}
+
+/* Active state */
+#mobile-bottom-nav a.active,
+#mobile-bottom-nav a[aria-current="page"] {
+  color: #2563eb; /* blue-600 */
+}
+
+/* Hover state for devices that support hover */
+@media (hover: hover) {
+  #mobile-bottom-nav a:hover {
+    color: #2563eb; /* blue-600 */
+  }
+}
+
+/* Active tap state */
+#mobile-bottom-nav a:active {
+  transform: scale(0.95);
+}
+
+/* Icon container */
+#mobile-bottom-nav .icon-container {
+  margin-bottom: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 24px;
+}
+
+/* Text labels */
+#mobile-bottom-nav .nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Cart badge */
+#mobile-bottom-nav .cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #ef4444; /* red-500 */
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 50%;
+  height: 16px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+}
+
+/* Icon styles */
+#mobile-bottom-nav svg {
+  height: 20px;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+/* Ensure consistent icon sizing */
+#mobile-bottom-nav .icon-container svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Bottom safe area for devices with notch */
+#mobile-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Body padding to prevent content from being hidden behind nav */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  /* Hide on larger screens */
+  #mobile-bottom-nav {
+    display: flex;
+  }
+}
+
+@media (min-width: 768px) {
+  #mobile-bottom-nav {
+    display: none;
+  }
+
+  body {
+    padding-bottom: 0;
+  }
+}
+
+/* Hide footer on mobile devices */
+@media (max-width: 767px) {
+  #footer {
+    display: none !important;
+  }
+
+  .section-footer {
+    display: none !important;
+  }
+
+  /* Ensure footer sections are hidden */
+  footer {
+    display: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  #mobile-bottom-nav {
+    border-top: 2px solid #374151;
+  }
+
+  #mobile-bottom-nav a {
+    color: #374151;
+  }
+
+  #mobile-bottom-nav a.active,
+  #mobile-bottom-nav a[aria-current="page"] {
+    color: #1f2937;
+    font-weight: 600;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  #mobile-bottom-nav {
+    background-color: #1f2937;
+    border-top-color: #374151;
+  }
+
+  #mobile-bottom-nav a {
+    color: #9ca3af;
+  }
+
+  #mobile-bottom-nav a.active,
+  #mobile-bottom-nav a[aria-current="page"] {
+    color: #60a5fa;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  #mobile-bottom-nav a {
+    transition: none;
+  }
+
+  #mobile-bottom-nav a:active {
+    transform: none;
+  }
+}

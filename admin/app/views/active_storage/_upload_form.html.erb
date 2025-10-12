@@ -13,6 +13,11 @@
       data-active-storage-upload-auto-submit-value="<%= auto_submit %>"
       data-active-storage-upload-field-name-value="<%= form.object_name %>[<%= field_name %>]"
       data-active-storage-upload-allowed-file-types-value="<%= Rails.application.config.active_storage.web_image_content_types %>"
+      data-active-storage-upload-max-file-size-value="512000"
+      data-active-storage-upload-compression-quality-value="0.8"
+      data-active-storage-upload-max-width-value="2048"
+      data-active-storage-upload-max-height-value="2048"
+      data-active-storage-upload-compress-on-client-value="true"
       class="d-flex flex-column justify-content-center w-100 position-relative">
     <div class="upload-area"
          data-action="click->active-storage-upload#open"

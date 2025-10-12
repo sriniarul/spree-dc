@@ -32,6 +32,9 @@
     <% end %>
   <% end %>
   <% if option_type.color? %>
+    <% # Find color-only variant first (for image management), then fallback to color/size variant %>
+    <% color_variant = product.variants.find { |variant| variant.option_values.count == 1 && variant.option_values.any? { |ov| ov.id == value.id } } %>
+    <% color_variant ||= product.variants.find { |variant| variant.option_values.any? { |ov| ov.id == value.id } } %>
     <li>
       <label class="cursor-pointer">
         <%= radio_button_tag option_type.presentation, value.name, selected_option == value,
@@ -44,7 +47,27 @@
             option_id: option_type.id
           }
         %>
-        <%= render 'spree/products/color_picker', disabled: option_disabled %>
+        <% if color_variant&.default_image.present? %>
+          <!-- Use variant image as thumbnail -->
+          <div class="variant-color-thumbnail peer-checked:ring-2 peer-checked:ring-primary peer-checked:ring-offset-2 rounded-lg transition-all duration-200 <%= 'opacity-50 cursor-not-allowed' if option_disabled %>">
+            <div class="variant-option border border-gray-300 rounded-lg overflow-hidden hover:border-gray-500 transition-colors duration-200 w-12 h-12">
+              <img
+                src="<%= main_app.url_for(color_variant.default_image.attachment.variant(resize_to_fill: [96, 96])) %>"
+                alt="<%= value.presentation %>"
+                class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                loading="lazy">
+            </div>
+            <!-- Color name label -->
+            <div class="text-center mt-1">
+              <span class="text-xs text-gray-700 font-medium block truncate max-w-[48px]">
+                <%= value.presentation.upcase %>
+              </span>
+            </div>
+          </div>
+        <% else %>
+          <!-- Fallback to color picker when no image -->
+          <%= render 'spree/products/color_picker', disabled: option_disabled, color: value.presentation %>
+        <% end %>
       </label>
     </li>
   <% else %>

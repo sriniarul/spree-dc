@@ -1,0 +1,212 @@
+<% content_for :page_title, "#{Spree.t('admin.vendors.show.title')}: #{@vendor.display_name}" %>
+
+<% content_for :page_actions do %>
+  <%= link_to Spree.t(:edit), spree.edit_admin_vendor_path(@vendor),
+      class: 'btn btn-primary', id: 'edit_vendor_link' %>
+  <%= link_to Spree.t(:back_to_vendors), spree.admin_vendors_path,
+      class: 'btn btn-secondary' %>
+<% end %>
+
+<div class="row">
+  <div class="col-md-8">
+    <!-- Business Information -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <%= Spree.t('admin.vendors.show.business_information') %>
+          <span class="badge badge-<%= vendor_status_class(@vendor.state) %> float-end">
+            <%= @vendor.state.titleize %>
+          </span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <strong><%= Spree.t('activerecord.attributes.spree/vendor.legal_name') %>:</strong><br>
+            <%= @vendor.legal_name %><br><br>
+
+            <strong><%= Spree.t('activerecord.attributes.spree/vendor.business_type') %>:</strong><br>
+            <%= @vendor.business_type_display %><br><br>
+
+            <strong><%= Spree.t('activerecord.attributes.spree/vendor.registration_number') %>:</strong><br>
+            <%= @vendor.registration_number %><br><br>
+
+            <% if @vendor.trade_name.present? %>
+              <strong><%= Spree.t('activerecord.attributes.spree/vendor.trade_name') %>:</strong><br>
+              <%= @vendor.trade_name %><br><br>
+            <% end %>
+          </div>
+          <div class="col-md-6">
+            <% if @vendor.incorporation_date.present? %>
+              <strong><%= Spree.t('activerecord.attributes.spree/vendor.incorporation_date') %>:</strong><br>
+              <%= @vendor.incorporation_date.strftime('%B %d, %Y') %><br>
+              <small class="text-muted">(<%= @vendor.business_age_in_years %> years old)</small><br><br>
+            <% end %>
+
+            <strong><%= Spree.t(:registration_progress) %>:</strong><br>
+            <div class="progress mb-2">
+              <div class="progress-bar" role="progressbar"
+                   style="width: <%= @vendor.business_registration_percentage %>%">
+                <%= @vendor.business_registration_percentage %>%
+              </div>
+            </div>
+            <small class="text-muted">
+              <%= @vendor.business_registration_complete? ? Spree.t(:complete) : Spree.t(:incomplete) %>
+            </small><br><br>
+
+            <strong><%= Spree.t(:registration_date) %>:</strong><br>
+            <%= @vendor.created_at.strftime('%B %d, %Y at %I:%M %p') %><br><br>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address Information -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <%= Spree.t('admin.vendors.show.address_information') %>
+        </h5>
+      </div>
+      <div class="card-body">
+        <address>
+          <%= @vendor.address_line1 %><br>
+          <% if @vendor.address_line2.present? %>
+            <%= @vendor.address_line2 %><br>
+          <% end %>
+          <%= @vendor.city %>, <%= @vendor.state_province %> <%= @vendor.postal_code %><br>
+          <%= @vendor.country&.name || @vendor.country_code %>
+        </address>
+      </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <%= Spree.t('admin.vendors.show.contact_information') %>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <strong><%= Spree.t(:phone) %>:</strong><br>
+            <%= @vendor.formatted_phone_number %><br><br>
+
+            <% if @vendor.website_url.present? %>
+              <strong><%= Spree.t(:website) %>:</strong><br>
+              <%= link_to @vendor.website_url, @vendor.website_url, target: '_blank', rel: 'noopener' %><br><br>
+            <% end %>
+          </div>
+          <div class="col-md-6">
+            <% if @vendor.user %>
+              <strong><%= Spree.t(:account_owner) %>:</strong><br>
+              <%= @vendor.user.first_name %> <%= @vendor.user.last_name %><br>
+              <%= link_to @vendor.user.email, "mailto:#{@vendor.user.email}" %><br><br>
+
+              <strong><%= Spree.t(:account_created) %>:</strong><br>
+              <%= @vendor.user.created_at.strftime('%B %d, %Y') %><br><br>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Information -->
+    <% if @vendor.products.any? %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+<%= Spree.t(:products) %> (<%= @vendor.products.count %>)
+          </h5>
+        </div>
+        <div class="card-body">
+          <% @vendor.products.limit(5).each do |product| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= link_to product.name, admin_product_path(product) %></span>
+              <span class="badge badge-<%= product.available? ? 'success' : 'secondary' %>">
+                <%= product.available? ? Spree.t(:available) : Spree.t(:unavailable) %>
+              </span>
+            </div>
+          <% end %>
+          <% if @vendor.products.count > 5 %>
+            <small class="text-muted">
+              <%= link_to "View all #{@vendor.products.count} products",
+                  admin_products_path(q: { vendor_id_eq: @vendor.id }) %>
+            </small>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="col-md-4">
+    <!-- Action Panel -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Actions</h5>
+      </div>
+      <div class="card-body">
+        <% if @vendor.pending? %>
+          <%= button_to spree.approve_admin_vendor_path(@vendor),
+              method: :patch,
+              class: 'btn btn-success d-grid mb-2',
+              data: { confirm: Spree.t(:are_you_sure_approve, vendor: @vendor.display_name) } do %>
+            <%= icon 'check', class: 'me-1' %> <%= Spree.t(:approve) %>
+          <% end %>
+
+          <%= button_to spree.reject_admin_vendor_path(@vendor),
+              method: :patch,
+              class: 'btn btn-danger d-grid mb-2',
+              data: { confirm: Spree.t(:are_you_sure_reject, vendor: @vendor.display_name) } do %>
+            <%= icon 'x', class: 'me-1' %> <%= Spree.t(:reject) %>
+          <% end %>
+        <% end %>
+
+        <% if @vendor.approved? %>
+          <%= button_to spree.suspend_admin_vendor_path(@vendor),
+              method: :patch,
+              class: 'btn btn-warning d-grid mb-2',
+              data: { confirm: Spree.t(:are_you_sure_suspend, vendor: @vendor.display_name) } do %>
+            <%= icon 'ban', class: 'me-1' %> <%= Spree.t(:suspend) %>
+          <% end %>
+        <% end %>
+
+        <% if @vendor.suspended? %>
+          <%= button_to spree.activate_admin_vendor_path(@vendor),
+              method: :patch,
+              class: 'btn btn-success d-grid mb-2',
+              data: { confirm: Spree.t(:are_you_sure_activate, vendor: @vendor.display_name) } do %>
+            <%= icon 'check', class: 'me-1' %> <%= Spree.t(:activate) %>
+          <% end %>
+        <% end %>
+
+        <%= link_to spree.edit_admin_vendor_path(@vendor), class: 'btn btn-primary d-grid mb-2' do %>
+          <%= icon 'edit', class: 'me-1' %> <%= Spree.t(:edit) %>
+        <% end %>
+
+        <%= button_to spree.admin_vendor_path(@vendor),
+            method: :delete,
+            class: 'btn btn-danger d-grid',
+            data: { confirm: Spree.t(:are_you_sure_delete, vendor: @vendor.display_name) } do %>
+          <%= icon 'trash', class: 'me-1' %> <%= Spree.t(:delete) %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><%= Spree.t(:statistics) %></h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-12 mb-3">
+            <h4 class="mb-0"><%= @vendor.products.count %></h4>
+            <small class="text-muted"><%= Spree.t(:products) %></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

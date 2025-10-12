@@ -1,0 +1,49 @@
+<!-- Vendor Limited Navigation -->
+<ul class="nav flex-column">
+  <!-- Home/Dashboard -->
+<!--  <li class="nav-item">-->
+    <%#= link_to spree.admin_dashboard_path, class: "nav-link d-flex align-items-center w-100 #{'active' if controller_name == 'dashboard'}" do %>
+      <%#= icon 'home' %>
+<!--      Home-->
+    <%# end %>
+<!--  </li>-->
+
+  <!-- Orders (vendor's orders only) -->
+  <li class="nav-item">
+    <%= link_to spree.admin_orders_path, class: "nav-link d-flex align-items-center w-100 #{'active' if controller_name == 'orders'}" do %>
+      <%= icon 'shopping-bag' %>
+      Orders
+    <% end %>
+  </li>
+
+  <!-- Returns (vendor's returns only) -->
+  <li class="nav-item">
+    <%= link_to spree.admin_return_authorizations_path, class: "nav-link d-flex align-items-center w-100 #{'active' if controller_name == 'return_authorizations'}" do %>
+      <%= icon 'arrow-back-up' %>
+      Returns
+    <% end %>
+  </li>
+
+  <!-- Products (vendor's products only) -->
+  <% products_active = %w[products stock_items].include?(controller_name) %>
+  <li class="nav-item">
+    <%= link_to spree.admin_products_path, class: "nav-link d-flex align-items-center w-100 #{'active' if products_active}" do %>
+      <%= icon 'cube' %>
+      Products
+      <% if respond_to?(:current_vendor) && current_vendor && current_vendor.products.any? %>
+        <span class="badge badge-light ml-auto">
+          <%= current_vendor.products.count %>
+        </span>
+      <% end %>
+    <% end %>
+  </li>
+
+  <!-- Products submenu -->
+  <ul class="nav-submenu <% unless products_active %>d-none<% end %>">
+    <li class="nav-item">
+      <%= link_to spree.admin_stock_items_path, class: "nav-link #{'active' if controller_name == 'stock_items'}" do %>
+        Stock
+      <% end %>
+    </li>
+  </ul>
+</ul>

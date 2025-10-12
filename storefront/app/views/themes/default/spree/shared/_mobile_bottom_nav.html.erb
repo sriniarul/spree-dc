@@ -1,0 +1,112 @@
+<!-- Mobile Bottom Navigation - Flipkart Style -->
+<nav id="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: white; border-top: 1px solid #e5e7eb; height: 64px;">
+  <div class="nav-container" style="display: flex; justify-content: space-evenly; align-items: center; height: 100%; width: 100%; padding: 0 4px; box-sizing: border-box;">
+
+    <!-- Home -->
+    <a href="<%= spree.root_path %>"
+       class="<%= current_page?(spree.root_path) ? 'active' : '' %>"
+       <%= 'aria-current="page"'.html_safe if current_page?(spree.root_path) %>
+       aria-label="Home"
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 8px 4px; text-align: center; color: <%= current_page?(spree.root_path) ? '#2563eb' : '#6b7280' %>; text-decoration: none; min-height: 64px; box-sizing: border-box;">
+      <div class="icon-container" style="margin-bottom: 4px; height: 24px; width: 24px; display: flex; align-items: center; justify-content: center;">
+        <%= render 'spree/shared/icons/home' %>
+      </div>
+      <span class="nav-label" style="font-size: 10px; font-weight: 500; line-height: 1; white-space: nowrap;">Home</span>
+    </a>
+
+    <!-- Categories -->
+    <a href="<%= spree.products_path %>"
+       class="<%= current_page?(spree.products_path) ? 'active' : '' %>"
+       <%= 'aria-current="page"'.html_safe if current_page?(spree.products_path) %>
+       aria-label="Categories"
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 8px 4px; text-align: center; color: <%= current_page?(spree.products_path) ? '#2563eb' : '#6b7280' %>; text-decoration: none; min-height: 64px; box-sizing: border-box;">
+      <div class="icon-container" style="margin-bottom: 4px; height: 24px; width: 24px; display: flex; align-items: center; justify-content: center;">
+        <%= render 'spree/shared/icons/grid' %>
+      </div>
+      <span class="nav-label" style="font-size: 10px; font-weight: 500; line-height: 1; white-space: nowrap;">Categories</span>
+    </a>
+
+    <!-- Search -->
+    <a href="<%= spree.search_path %>"
+       class="<%= current_page?(spree.search_path) ? 'active' : '' %>"
+       <%= 'aria-current="page"'.html_safe if current_page?(spree.search_path) %>
+       aria-label="Search products"
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 8px 4px; text-align: center; color: <%= current_page?(spree.search_path) ? '#2563eb' : '#6b7280' %>; text-decoration: none; min-height: 64px; box-sizing: border-box;">
+      <div class="icon-container" style="margin-bottom: 4px; height: 24px; width: 24px; display: flex; align-items: center; justify-content: center;">
+        <%= render 'spree/shared/icons/search' %>
+      </div>
+      <span class="nav-label" style="font-size: 10px; font-weight: 500; line-height: 1; white-space: nowrap;">Search</span>
+    </a>
+
+    <!-- Cart -->
+    <a href="<%= spree.cart_path %>"
+       class="<%= current_page?(spree.cart_path) ? 'active' : '' %>"
+       <%= 'aria-current="page"'.html_safe if current_page?(spree.cart_path) %>
+       aria-label="Shopping cart<% if defined?(current_order) && current_order&.item_count && current_order.item_count > 0 %> - <%= pluralize(current_order.item_count, 'item') %><% end %>"
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 8px 4px; text-align: center; color: <%= current_page?(spree.cart_path) ? '#2563eb' : '#6b7280' %>; text-decoration: none; min-height: 64px; box-sizing: border-box;">
+      <div class="icon-container" style="margin-bottom: 4px; height: 24px; width: 24px; display: flex; align-items: center; justify-content: center; position: relative;">
+        <%= render 'spree/shared/icons/cart' %>
+        <!-- Cart count badge -->
+        <% if defined?(current_order) && current_order&.item_count && current_order.item_count > 0 %>
+          <span class="cart-badge" aria-hidden="true" style="position: absolute; top: -8px; right: -8px; background-color: #ef4444; color: white; font-size: 10px; font-weight: bold; border-radius: 50%; height: 16px; width: 16px; display: flex; align-items: center; justify-content: center; min-width: 16px;">
+            <%= current_order.item_count > 9 ? '9+' : current_order.item_count %>
+          </span>
+        <% end %>
+      </div>
+      <span class="nav-label" style="font-size: 10px; font-weight: 500; line-height: 1; white-space: nowrap;">Cart</span>
+    </a>
+
+    <!-- Account -->
+    <% if spree_current_user %>
+      <a href="<%= spree.account_path %>"
+         class="<%= request.path.starts_with?('/account') ? 'active' : '' %>"
+         <%= 'aria-current="page"'.html_safe if request.path.starts_with?('/account') %>
+         aria-label="Account"
+         style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 8px 4px; text-align: center; color: <%= request.path.starts_with?('/account') ? '#2563eb' : '#6b7280' %>; text-decoration: none; min-height: 64px; box-sizing: border-box;">
+        <div class="icon-container" style="margin-bottom: 4px; height: 24px; width: 24px; display: flex; align-items: center; justify-content: center;">
+          <%= render 'spree/shared/icons/account' %>
+        </div>
+        <span class="nav-label" style="font-size: 10px; font-weight: 500; line-height: 1; white-space: nowrap;">Account</span>
+      </a>
+    <% else %>
+      <a href="<%= main_app.new_user_session_path %>"
+         class="<%= current_page?(main_app.new_user_session_path) ? 'active' : '' %>"
+         <%= 'aria-current="page"'.html_safe if current_page?(main_app.new_user_session_path) %>
+         aria-label="Login"
+         style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 8px 4px; text-align: center; color: <%= current_page?(main_app.new_user_session_path) ? '#2563eb' : '#6b7280' %>; text-decoration: none; min-height: 64px; box-sizing: border-box;">
+        <div class="icon-container" style="margin-bottom: 4px; height: 24px; width: 24px; display: flex; align-items: center; justify-content: center;">
+          <%= render 'spree/shared/icons/account' %>
+        </div>
+        <span class="nav-label" style="font-size: 10px; font-weight: 500; line-height: 1; white-space: nowrap;">Login</span>
+      </a>
+    <% end %>
+
+  </div>
+</nav>
+
+<style>
+  /* Mobile-only navigation */
+  @media (min-width: 768px) {
+    #mobile-bottom-nav {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 767px) {
+    /* Hide footer on mobile */
+    #footer, .section-footer, footer {
+      display: none !important;
+    }
+
+    /* Add padding to body for fixed navigation */
+    body {
+      padding-bottom: 64px !important;
+    }
+
+    /* Ensure icons are properly sized */
+    #mobile-bottom-nav svg {
+      height: 20px !important;
+      width: 20px !important;
+    }
+  }
+</style>

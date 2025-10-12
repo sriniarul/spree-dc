@@ -1,5 +1,5 @@
 <aside id="main-sidebar" class="overflow-y-auto">
-  <% if defined?(current_vendor) && current_vendor.present? %>
+  <% if respond_to?(:current_vendor) && current_vendor&.approved? %>
     <%= render 'spree/admin/shared/sidebar/vendor_nav' %>
   <% else %>
     <%= render 'spree/admin/shared/sidebar/store_nav' %>

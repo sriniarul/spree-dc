@@ -1,0 +1,52 @@
+<% content_for :title, Spree.t('multivendor.registration_success_title') %>
+
+<div class="page-container">
+  <div class="mx-auto max-w-2xl py-16 text-center">
+    <!-- Success Icon -->
+    <div class="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-8">
+      <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <!-- Success Message -->
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">
+      <%= Spree.t('multivendor.registration_success_title') %>
+    </h1>
+
+    <p class="text-lg text-gray-600 mb-8">
+      <%= Spree.t('multivendor.registration_success_message') %>
+    </p>
+
+    <!-- Next Steps -->
+    <div class="bg-blue-50 rounded-lg p-6 text-left mb-8">
+      <h2 class="text-lg font-semibold text-blue-900 mb-4">
+        <%= Spree.t('multivendor.what_happens_next') %>
+      </h2>
+      <ul class="space-y-3 text-blue-800">
+        <li class="flex items-start">
+          <span class="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">1</span>
+          <%= Spree.t('multivendor.next_step_review') %>
+        </li>
+        <li class="flex items-start">
+          <span class="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">2</span>
+          <%= Spree.t('multivendor.next_step_notification') %>
+        </li>
+        <li class="flex items-start">
+          <span class="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">3</span>
+          <%= Spree.t('multivendor.next_step_access') %>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="space-y-4">
+      <%= link_to Spree.t('multivendor.return_home'), spree.root_path,
+          class: 'inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500' %>
+
+      <p class="text-sm text-gray-500">
+        <%= Spree.t('multivendor.questions_contact_html') %>
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,171 @@
+<% content_for :page_title, "Vendor Dashboard" %>
+
+<div class="row">
+  <div class="col-12">
+    <h2 class="mb-4">Welcome back, <%= @vendor.display_name %>!</h2>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card bg-primary text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3 class="mb-0"><%= @products_count %></h3>
+            <p class="mb-0">Total Products</p>
+          </div>
+          <div class="align-self-center">
+            <%= icon 'cube', height: 32 %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-success text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3 class="mb-0"><%= @active_products_count %></h3>
+            <p class="mb-0">Active Products</p>
+          </div>
+          <div class="align-self-center">
+            <%= icon 'check', height: 32 %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-info text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3 class="mb-0"><%= @orders_count %></h3>
+            <p class="mb-0">Total Orders</p>
+          </div>
+          <div class="align-self-center">
+            <%= icon 'shopping-bag', height: 32 %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-warning text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3 class="mb-0"><%= @pending_orders_count %></h3>
+            <p class="mb-0">Pending Orders</p>
+          </div>
+          <div class="align-self-center">
+            <%= icon 'clock', height: 32 %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Recent Orders -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Recent Orders</h5>
+        <%= link_to 'View All Orders', spree.admin_vendor_orders_path, class: 'btn btn-sm btn-primary' %>
+      </div>
+      <div class="card-body">
+        <% if @recent_orders.any? %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @recent_orders.each do |order| %>
+                  <tr>
+                    <td>
+                      <%= link_to order.number, spree.admin_vendor_order_path(order), class: 'text-decoration-none' %>
+                    </td>
+                    <td>
+                      <%= order.user&.email || 'Guest' %>
+                    </td>
+                    <td>
+                      <%= order.created_at.strftime('%m/%d/%Y') %>
+                    </td>
+                    <td>
+                      <span class="badge badge-<%= order.payment_state == 'paid' ? 'success' : 'warning' %>">
+                        <%= order.payment_state&.humanize || 'Pending' %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= order.display_total %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">No recent orders found.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions & Top Products -->
+  <div class="col-md-4">
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Quick Actions</h5>
+      </div>
+      <div class="card-body">
+        <%= link_to spree.new_admin_vendor_product_path, class: 'btn btn-primary btn-block mb-2' do %>
+          <%= icon 'plus', class: 'mr-1' %> Add New Product
+        <% end %>
+
+        <%= link_to spree.admin_vendor_products_path, class: 'btn btn-outline-primary btn-block mb-2' do %>
+          <%= icon 'cube', class: 'mr-1' %> Manage Products
+        <% end %>
+
+        <%= link_to "/admin/vendors/#{@vendor.id}/edit", class: 'btn btn-outline-secondary btn-block' do %>
+          <%= icon 'settings', class: 'mr-1' %> Update Profile
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Top Products -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Top Selling Products</h5>
+      </div>
+      <div class="card-body">
+        <% if @top_products.any? %>
+          <% @top_products.each do |product| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="flex-grow-1">
+                <small class="text-muted"><%= product.name %></small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted small">No sales data available yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

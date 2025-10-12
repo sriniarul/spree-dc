@@ -1,0 +1,15 @@
+<% if can?(:manage, current_store) %>
+  <li class="nav-item">
+    <%= link_to "/admin/vendors", class: "nav-link d-flex align-items-center w-100 #{'active' if controller_name == 'vendors'}" do %>
+      <%= icon 'heart-handshake' %>
+      <%= Spree.t(:vendors) %>
+
+      <% pending_count = Spree::Vendor.pending.count %>
+      <% if pending_count > 0 %>
+        <span class="badge badge-warning ml-auto rounded-pill" title="<%= pending_count %> pending approval">
+          <%= pending_count %>
+        </span>
+      <% end %>
+    <% end %>
+  </li>
+<% end %>
