@@ -1,7 +1,7 @@
 <% cache_unless page_builder_enabled?, [spree_storefront_base_cache_scope.call(section), request.path] do %>
   <% layout = section.preferred_layout %>
   <header
-    class='header-<%= layout %>'
+    class='sticky has-[.currency-and-locale-modal:not(.hidden)]:relative top-0 z-50 has-[.currency-and-locale-modal:not(.hidden)]:z-[unset] header-<%= layout %>'
     data-controller='header toggle-menu slideover <%= "slideover-account" if show_account_pane? %>'
     data-toggle-menu-class='hamburger-visible'
     data-slideover-invisible-class='translate-x-full,opacity-0'
