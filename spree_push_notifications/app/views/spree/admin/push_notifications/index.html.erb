@@ -1,0 +1,86 @@
+<% content_for :page_title do %>
+  <%= Spree.t('admin.push_notifications.title') %>
+<% end %>
+
+<% content_for :page_actions do %>
+  <%= form_with url: spree.test_admin_push_notifications_path, method: :post, local: true, class: "d-inline" do |form| %>
+    <%= form.submit Spree.t('admin.push_notifications.send_test'), class: "btn btn-outline-primary" %>
+  <% end %>
+  <%= link_to_with_icon 'plus', Spree.t('admin.push_notifications.send_notification'), spree.new_admin_push_notification_path, class: "btn btn-primary" %>
+<% end %>
+
+<div class="card-lg">
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.push_notifications.statistics') %>
+    </h5>
+  </div>
+
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="stat-card">
+          <div class="stat-number text-primary">
+            <%= @subscription_count %>
+          </div>
+          <div class="stat-label">
+            <%= Spree.t('admin.push_notifications.total_subscriptions') %>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="stat-card">
+          <div class="stat-number text-success">
+            <%= @active_subscription_count %>
+          </div>
+          <div class="stat-label">
+            <%= Spree.t('admin.push_notifications.active_subscriptions') %>
+            <small class="text-muted">(<%= Spree.t('admin.push_notifications.last_30_days') %>)</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="card-title">
+      <%= Spree.t('admin.push_notifications.about') %>
+    </h5>
+  </div>
+
+  <div class="card-body">
+    <p><%= Spree.t('admin.push_notifications.description') %></p>
+
+    <div class="alert alert-info">
+      <h6><%= Spree.t('admin.push_notifications.tips_title') %></h6>
+      <ul class="mb-0">
+        <li><%= Spree.t('admin.push_notifications.tip_1') %></li>
+        <li><%= Spree.t('admin.push_notifications.tip_2') %></li>
+        <li><%= Spree.t('admin.push_notifications.tip_3') %></li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<style>
+.stat-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+</style>

@@ -1,0 +1,3 @@
+<% if can?(:admin, Spree::PushSubscription) %>
+  <%= nav_item(Spree.t('admin.push_notifications.nav_label'), spree.admin_push_notifications_path, icon: 'notification-2-line') %>
+<% end %>

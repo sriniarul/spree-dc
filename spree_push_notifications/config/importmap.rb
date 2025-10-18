@@ -1,0 +1,1 @@
+pin "spree/push_notifications", to: "spree/push_notifications.js"

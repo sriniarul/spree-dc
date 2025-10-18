@@ -1,0 +1,212 @@
+<% content_for :page_title do %>
+  <%= link_to spree.admin_push_notifications_path, class: "btn btn-outline-secondary me-2" do %>
+    <%= icon "arrow-left" %>
+  <% end %>
+  <%= Spree.t('admin.push_notifications.new_notification') %>
+<% end %>
+
+<%= form_with url: spree.admin_push_notifications_path, local: true, class: "needs-validation", novalidate: true do |form| %>
+  <div class="row">
+    <div class="col-lg-8 offset-lg-2">
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title">
+        <%= Spree.t('admin.push_notifications.notification_content') %>
+      </h5>
+    </div>
+
+    <div class="card-body">
+      <div class="mb-3">
+        <%= form.label 'push_notification[title]', 'Title', class: "form-label" %>
+        <%= form.text_field 'push_notification[title]',
+            class: "form-control",
+            placeholder: Spree.t('admin.push_notifications.title_placeholder'),
+            maxlength: 50,
+            required: true %>
+        <div class="form-text">
+          <%= Spree.t('admin.push_notifications.title_help') %>
+        </div>
+        <div class="invalid-feedback">
+          <%= Spree.t('admin.push_notifications.title_required') %>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label 'push_notification[body]', 'Body', class: "form-label" %>
+        <%= form.text_area 'push_notification[body]',
+            class: "form-control",
+            rows: 3,
+            placeholder: Spree.t('admin.push_notifications.body_placeholder'),
+            maxlength: 160,
+            required: true %>
+        <div class="form-text">
+          <%= Spree.t('admin.push_notifications.body_help') %>
+        </div>
+        <div class="invalid-feedback">
+          <%= Spree.t('admin.push_notifications.body_required') %>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label 'push_notification[url]', 'URL', class: "form-label" %>
+        <%= form.url_field 'push_notification[url]',
+            class: "form-control",
+            placeholder: Spree.t('admin.push_notifications.url_placeholder'),
+            value: @push_notification.url %>
+        <div class="form-text">
+          <%= Spree.t('admin.push_notifications.url_help') %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title">
+        <%= Spree.t('admin.push_notifications.appearance') %>
+      </h5>
+    </div>
+
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= form.label 'push_notification[icon]', 'Icon', class: "form-label" %>
+            <%= form.url_field 'push_notification[icon]',
+                class: "form-control",
+                placeholder: "/icon.png",
+                value: @push_notification.icon %>
+            <div class="form-text">
+              <%= Spree.t('admin.push_notifications.icon_help') %>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= form.label 'push_notification[badge]', 'Badge', class: "form-label" %>
+            <%= form.url_field 'push_notification[badge]',
+                class: "form-control",
+                placeholder: "/icon.png",
+                value: @push_notification.badge %>
+            <div class="form-text">
+              <%= Spree.t('admin.push_notifications.badge_help') %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title">
+        <%= Spree.t('admin.push_notifications.preview') %>
+      </h5>
+    </div>
+
+    <div class="card-body">
+      <div class="notification-preview" id="notification-preview">
+        <div class="notification-icon">
+          <img src="/icon.png" alt="Icon" width="24" height="24">
+        </div>
+        <div class="notification-content">
+          <div class="notification-title" id="preview-title">
+            <%= Spree.t('admin.push_notifications.preview_title') %>
+          </div>
+          <div class="notification-body" id="preview-body">
+            <%= Spree.t('admin.push_notifications.preview_body') %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= link_to Spree.t('admin.actions.cancel'), spree.admin_push_notifications_path, class: "btn btn-secondary" %>
+    <%= form.submit Spree.t('admin.push_notifications.send_to_all'),
+        class: "btn btn-primary",
+        confirm: Spree.t('admin.push_notifications.send_confirmation', count: @active_subscription_count || 0) %>
+  </div>
+
+    </div>
+  </div>
+<% end %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const titleInput = document.querySelector('input[name="push_notification[title]"]');
+  const bodyInput = document.querySelector('textarea[name="push_notification[body]"]');
+  const iconInput = document.querySelector('input[name="push_notification[icon]"]');
+  const previewTitle = document.getElementById('preview-title');
+  const previewBody = document.getElementById('preview-body');
+  const previewIcon = document.querySelector('.notification-preview img');
+
+  function updatePreview() {
+    if (previewTitle && titleInput) {
+      previewTitle.textContent = titleInput.value || '<%= Spree.t('admin.push_notifications.preview_title') %>';
+    }
+    if (previewBody && bodyInput) {
+      previewBody.textContent = bodyInput.value || '<%= Spree.t('admin.push_notifications.preview_body') %>';
+    }
+    if (previewIcon && iconInput) {
+      previewIcon.src = iconInput.value || '/icon.png';
+    }
+  }
+
+  if (titleInput) titleInput.addEventListener('input', updatePreview);
+  if (bodyInput) bodyInput.addEventListener('input', updatePreview);
+  if (iconInput) iconInput.addEventListener('input', updatePreview);
+
+  // Bootstrap form validation
+  const forms = document.querySelectorAll('.needs-validation');
+  forms.forEach(function(form) {
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  });
+});
+</script>
+
+<style>
+.notification-preview {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+  max-width: 400px;
+}
+
+.notification-icon {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.notification-icon img {
+  border-radius: 4px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #212529;
+}
+
+.notification-body {
+  font-size: 13px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+</style>

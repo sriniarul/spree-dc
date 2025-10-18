@@ -11,7 +11,10 @@
       "Bash(bundle exec rails:*)",
       "Bash(curl:*)",
       "Bash(bundle exec rake:*)",
-      "Bash(bin/importmap:*)"
+      "Bash(bin/importmap:*)",
+      "Read(//Users/arulsrinivaasan/Documents/DimeCart/app/javascript/**)",
+      "Read(//Users/arulsrinivaasan/Documents/DimeCart/app/controllers/api/push/**)",
+      "Read(//Users/arulsrinivaasan/Documents/DimeCart/**)"
     ],
     "deny": []
   }

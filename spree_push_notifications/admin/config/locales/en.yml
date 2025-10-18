@@ -1,0 +1,52 @@
+en:
+  spree:
+    admin:
+      push_notifications:
+        title: "Push Notifications"
+        new_notification: "New Push Notification"
+        send_notification: "Send Notification"
+        send_test: "Send Test"
+        send_to_all: "Send to All Users"
+        successfully_queued: "Push notification has been queued and will be sent to all active subscribers."
+        test_queued: "Test notification queued for %{count} active subscribers."
+        no_active_subscriptions: "No active push subscriptions found. Users need to enable notifications first."
+        validation_failed: "Please correct the errors below."
+        send_confirmation: "Are you sure you want to send this notification to %{count} users?"
+
+        # Statistics
+        statistics: "Statistics"
+        total_subscriptions: "Total Subscriptions"
+        active_subscriptions: "Active Subscriptions"
+        last_30_days: "last 30 days"
+
+        # Form fields
+        notification_content: "Notification Content"
+        title_placeholder: "Enter notification title..."
+        title_help: "Keep it short and descriptive (max 50 characters)"
+        title_required: "Title is required"
+        body_placeholder: "Enter notification message..."
+        body_help: "Provide a clear message for your users (max 160 characters)"
+        body_required: "Message is required"
+        url_placeholder: "/products/new-arrival"
+        url_help: "URL to open when notification is clicked"
+
+        # Appearance
+        appearance: "Appearance"
+        icon_help: "Icon displayed with the notification (recommended: 192x192px)"
+        badge_help: "Small icon for status bar (recommended: 72x72px)"
+
+        # Preview
+        preview: "Preview"
+        preview_title: "Sample Notification Title"
+        preview_body: "This is how your notification will appear to users."
+
+        # About
+        about: "About Push Notifications"
+        description: "Send instant notifications to your users' devices even when they're not browsing your store. Perfect for promotions, order updates, and important announcements."
+        tips_title: "Best Practices:"
+        tip_1: "Keep titles under 50 characters for better visibility"
+        tip_2: "Write clear, actionable messages that provide value"
+        tip_3: "Test notifications before sending to all users"
+
+        # Navigation
+        nav_label: "Push Notifications"
