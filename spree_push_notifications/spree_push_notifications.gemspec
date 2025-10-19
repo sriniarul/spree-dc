@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.requirements << 'none'
 
   s.add_dependency 'spree', '>= 4.2'
-  s.add_dependency 'webpush', '~> 1.2'
+  s.add_dependency 'webpush'
 
   s.add_development_dependency 'rspec-rails'
 end
