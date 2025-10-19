@@ -10,6 +10,7 @@ Spree::Core::Engine.routes.draw do
     resources :push_notifications, only: [:index, :new, :create] do
       collection do
         post :test
+        get :analytics
       end
     end
   end

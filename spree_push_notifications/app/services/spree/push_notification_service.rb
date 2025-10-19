@@ -25,29 +25,49 @@ module Spree
     def self.send_to_subscriptions(subscriptions, title, body, options = {})
       return { success: 0, failure: 0 } if subscriptions.empty?
 
+      # Create campaign for tracking (if campaign_id is not provided)
+      campaign = options[:campaign] || create_campaign(title, body, options)
+
       payload = {
         title: title,
         body: body,
         icon: options[:icon] || '/icon.png',
         badge: options[:badge] || '/badge.png',
-        url: options[:url] || '/'
+        url: options[:url] || '/',
+        campaign_id: campaign.id # Add campaign ID to payload for client-side tracking
       }.to_json
 
       # Handle OpenSSL 3.0 compatibility by creating VAPID options properly
       vapid_options = build_vapid_options
 
-      results = { success: 0, failure: 0, errors: [] }
+      results = { success: 0, failure: 0, errors: [], campaign: campaign }
+      total_sent = subscriptions.count
 
       subscriptions.each do |subscription|
+        delivery_record = nil
         begin
+          # Create delivery record
+          delivery_record = campaign.push_notification_deliveries.create!(
+            push_subscription: subscription,
+            status: 'pending',
+            delivered_at: Time.current
+          )
+
           # Use helper method to handle OpenSSL 3.0 compatibility
           send_notification_with_retry(subscription, payload, vapid_options)
 
+          # Mark as delivered
+          delivery_record.update!(status: 'delivered')
           subscription.update(last_used_at: Time.current)
           results[:success] += 1
         rescue => e
           results[:failure] += 1
           results[:errors] << { subscription_id: subscription.id, error: e.message }
+
+          # Mark delivery as failed
+          if delivery_record
+            delivery_record.update!(status: 'failed', error_message: e.message)
+          end
 
           # Remove subscriptions that are expired or invalid
           if e.message.include?('expired') || e.message.include?('invalid') || e.message.include?('unsubscribed')
@@ -56,7 +76,26 @@ module Spree
         end
       end
 
+      # Update campaign statistics
+      campaign.update!(
+        total_sent: total_sent,
+        total_delivered: results[:success],
+        total_failed: results[:failure]
+      )
+
       results
+    end
+
+    def self.create_campaign(title, body, options = {})
+      Spree::PushNotificationCampaign.create!(
+        title: title,
+        body: body,
+        url: options[:url] || '/',
+        icon: options[:icon] || '/icon.png',
+        badge: options[:badge] || '/badge.png',
+        sent_at: Time.current,
+        metadata: options.except(:campaign, :icon, :badge, :url).to_json
+      )
     end
 
     def self.build_vapid_options

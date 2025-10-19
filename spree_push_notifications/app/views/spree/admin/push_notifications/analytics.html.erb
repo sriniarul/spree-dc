@@ -1,0 +1,316 @@
+<% content_for :page_title do %>
+  Push Notification Analytics
+<% end %>
+
+<% content_for :page_actions do %>
+  <%= link_to 'Back to Push Notifications', spree.admin_push_notifications_path, class: "btn btn-outline-secondary" %>
+<% end %>
+
+<!-- Date Filter Form -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Date Range Filter</h5>
+  </div>
+  <div class="card-body">
+    <%= form_with url: spree.analytics_admin_push_notifications_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.label :start_date, class: "form-label" %>
+        <%= form.date_field :start_date, value: @start_date, class: "form-control" %>
+      </div>
+      <div class="col-md-4">
+        <%= form.label :end_date, class: "form-label" %>
+        <%= form.date_field :end_date, value: @end_date, class: "form-control" %>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <%= form.submit 'Update', class: "btn btn-primary me-2" %>
+        <%= link_to 'Last 7 Days', spree.analytics_admin_push_notifications_path(start_date: 7.days.ago.to_date, end_date: Date.current), class: "btn btn-outline-primary me-2" %>
+        <%= link_to 'This Month', spree.analytics_admin_push_notifications_path(start_date: Date.current.beginning_of_month, end_date: Date.current), class: "btn btn-outline-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <div class="stat-number text-primary"><%= @period_stats[:total_sent] %></div>
+        <div class="stat-label">Total Sent</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <div class="stat-number text-success"><%= @period_stats[:total_delivered] %></div>
+        <div class="stat-label">Successfully Delivered</div>
+        <small class="text-muted"><%= @period_stats[:success_rate] %>% success rate</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <div class="stat-number text-info"><%= @period_stats[:total_clicked] %></div>
+        <div class="stat-label">Clicked</div>
+        <small class="text-muted"><%= @period_stats[:click_rate] %>% click rate</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <div class="stat-number text-danger"><%= @period_stats[:total_failed] %></div>
+        <div class="stat-label">Failed</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Time Series Charts -->
+<div class="row mb-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Daily Notifications Sent vs Delivered</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="sentDeliveredChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Success & Click Rates Over Time</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="ratesChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Campaign Performance Table -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Recent Campaigns</h5>
+  </div>
+  <div class="card-body">
+    <% if @campaigns.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Sent At</th>
+              <th>Title</th>
+              <th>Sent</th>
+              <th>Delivered</th>
+              <th>Failed</th>
+              <th>Clicked</th>
+              <th>Success Rate</th>
+              <th>Click Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @campaigns.each do |campaign| %>
+              <tr>
+                <td><%= campaign.sent_at.strftime('%m/%d %H:%M') %></td>
+                <td>
+                  <strong><%= truncate(campaign.title, length: 40) %></strong>
+                  <% if campaign.url.present? && campaign.url != '/' %>
+                    <br><small class="text-muted"><%= truncate(campaign.url, length: 50) %></small>
+                  <% end %>
+                </td>
+                <td><span class="badge bg-primary"><%= campaign.total_sent %></span></td>
+                <td><span class="badge bg-success"><%= campaign.total_delivered %></span></td>
+                <td><span class="badge bg-danger"><%= campaign.total_failed %></span></td>
+                <td><span class="badge bg-info"><%= campaign.total_clicked %></span></td>
+                <td>
+                  <% success_rate = campaign.success_rate %>
+                  <span class="badge bg-<%= success_rate >= 90 ? 'success' : success_rate >= 70 ? 'warning' : 'danger' %>">
+                    <%= success_rate %>%
+                  </span>
+                </td>
+                <td>
+                  <% click_rate = campaign.click_rate %>
+                  <span class="badge bg-<%= click_rate >= 5 ? 'success' : click_rate >= 2 ? 'warning' : 'secondary' %>">
+                    <%= click_rate %>%
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <h6 class="text-muted">No campaigns found for the selected date range</h6>
+        <p class="text-muted">Send some push notifications to see analytics data here.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+</style>
+
+<!-- Chart.js for time series charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const chartData = <%= raw @chart_data %>;
+
+  // Configure Chart.js with default settings
+  Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+  Chart.defaults.color = '#6c757d';
+
+  // Sent vs Delivered Chart
+  const sentDeliveredCtx = document.getElementById('sentDeliveredChart').getContext('2d');
+  new Chart(sentDeliveredCtx, {
+    type: 'line',
+    data: {
+      labels: chartData.dates,
+      datasets: [
+        {
+          label: 'Sent',
+          data: chartData.sent,
+          borderColor: '#0d6efd',
+          backgroundColor: 'rgba(13, 110, 253, 0.1)',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'Delivered',
+          data: chartData.delivered,
+          borderColor: '#198754',
+          backgroundColor: 'rgba(25, 135, 84, 0.1)',
+          fill: true,
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0,0,0,0.05)'
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(0,0,0,0.05)'
+          }
+        }
+      },
+      elements: {
+        point: {
+          radius: 4,
+          hoverRadius: 6
+        }
+      }
+    }
+  });
+
+  // Success & Click Rates Chart
+  const ratesCtx = document.getElementById('ratesChart').getContext('2d');
+  new Chart(ratesCtx, {
+    type: 'line',
+    data: {
+      labels: chartData.dates,
+      datasets: [
+        {
+          label: 'Success Rate (%)',
+          data: chartData.success_rates,
+          borderColor: '#198754',
+          backgroundColor: 'rgba(25, 135, 84, 0.1)',
+          yAxisID: 'y',
+          tension: 0.4
+        },
+        {
+          label: 'Click Rate (%)',
+          data: chartData.click_rates,
+          borderColor: '#0dcaf0',
+          backgroundColor: 'rgba(13, 202, 240, 0.1)',
+          yAxisID: 'y1',
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            color: 'rgba(0,0,0,0.05)'
+          }
+        },
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          min: 0,
+          max: 100,
+          grid: {
+            color: 'rgba(0,0,0,0.05)'
+          },
+          title: {
+            display: true,
+            text: 'Success Rate (%)'
+          }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          min: 0,
+          grid: {
+            drawOnChartArea: false,
+          },
+          title: {
+            display: true,
+            text: 'Click Rate (%)'
+          }
+        }
+      },
+      elements: {
+        point: {
+          radius: 4,
+          hoverRadius: 6
+        }
+      }
+    }
+  });
+});
+</script>

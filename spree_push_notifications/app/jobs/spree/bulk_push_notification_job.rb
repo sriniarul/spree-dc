@@ -8,32 +8,29 @@ module Spree
       # Get all active push subscriptions
       subscriptions = Spree::PushSubscription.where('last_used_at > ?', 30.days.ago)
 
-      success_count = 0
-      failure_count = 0
-
-      subscriptions.find_each(batch_size: 100) do |subscription|
-        result = PushNotificationService.send_to_subscription(
-          subscription,
-          title,
-          message,
-          options
-        )
-
-        if result[:success] > 0
-          success_count += 1
-        else
-          failure_count += 1
-          Rails.logger.warn "Failed to send notification to subscription #{subscription.id}: #{result[:errors]}"
-        end
+      if subscriptions.empty?
+        Rails.logger.info "No active subscriptions found for bulk notification"
+        return { total_sent: 0, total_failed: 0, total_subscriptions: 0, campaign_id: nil }
       end
 
-      Rails.logger.info "Bulk push notification completed: #{success_count} success, #{failure_count} failures"
+      # Use the updated service method that handles campaign tracking automatically
+      result = PushNotificationService.send_to_subscriptions(
+        subscriptions,
+        title,
+        message,
+        options
+      )
+
+      campaign = result[:campaign]
+      Rails.logger.info "Bulk push notification completed: #{result[:success]} success, #{result[:failure]} failures (Campaign ID: #{campaign&.id})"
 
       # Return summary for potential logging or admin feedback
       {
-        total_sent: success_count,
-        total_failed: failure_count,
-        total_subscriptions: subscriptions.count
+        total_sent: result[:success],
+        total_failed: result[:failure],
+        total_subscriptions: subscriptions.count,
+        campaign_id: campaign&.id,
+        errors: result[:errors]
       }
     end
   end
