@@ -1,9 +1,8 @@
 Spree::Core::Engine.routes.draw do
   namespace :api do
     namespace :push do
-      get 'public-key', to: 'subscriptions#public_key'
-      post 'subscribe', to: 'subscriptions#create'
-      get 'test-push', to: 'subscriptions#test'
+      get 'env', to: 'env#show'
+      resources :subscriptions, only: [:create, :destroy]
     end
   end
 

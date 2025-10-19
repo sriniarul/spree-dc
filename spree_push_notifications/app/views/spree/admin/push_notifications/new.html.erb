@@ -107,16 +107,16 @@
     </div>
 
     <div class="card-body">
-      <div class="notification-preview" id="notification-preview">
-        <div class="notification-icon">
-          <img src="/icon.png" alt="Icon" width="24" height="24">
-        </div>
-        <div class="notification-content">
-          <div class="notification-title" id="preview-title">
-            <%= Spree.t('admin.push_notifications.preview_title') %>
-          </div>
-          <div class="notification-body" id="preview-body">
-            <%= Spree.t('admin.push_notifications.preview_body') %>
+      <div class="notification-preview p-3 bg-light border rounded">
+        <div class="d-flex align-items-start">
+          <img src="/icon.png" alt="Icon" class="me-3" style="width: 48px; height: 48px; object-fit: cover;" onerror="this.style.display='none'">
+          <div class="flex-grow-1">
+            <div class="fw-bold" id="preview-title">
+              <%= Spree.t('admin.push_notifications.preview_title') %>
+            </div>
+            <div class="text-muted" id="preview-body">
+              <%= Spree.t('admin.push_notifications.preview_body') %>
+            </div>
           </div>
         </div>
       </div>
@@ -175,38 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 .notification-preview {
-  display: flex;
-  align-items: flex-start;
-  padding: 16px;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  background: #f8f9fa;
   max-width: 400px;
-}
-
-.notification-icon {
-  margin-right: 12px;
-  flex-shrink: 0;
-}
-
-.notification-icon img {
-  border-radius: 4px;
-}
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-title {
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 4px;
-  color: #212529;
-}
-
-.notification-body {
-  font-size: 13px;
-  color: #6c757d;
-  line-height: 1.4;
 }
 </style>

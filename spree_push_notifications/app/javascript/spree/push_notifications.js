@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
       if (Notification.permission === 'granted') {
         // Check if we have a valid subscription
         checkSubscription(registration);
-      } else if (Notification.permission !== 'denied') {
-        // Request notification permission immediately
-        requestNotificationPermission();
+      } else if (shouldShowBanner()) {
+        // Show banner for permission request
+        showPushNotificationBanner();
       }
     })
     .catch(function(error) {
@@ -151,6 +151,34 @@ function ensureBannerExists() {
   }
 }
 
+// Configuration
+const CONFIG = {
+  dismissalKey: 'spree_push_notification_dismissed',
+  dismissalDays: 7
+};
+
+// Check if we should show the banner
+function shouldShowBanner() {
+  const permission = Notification.permission;
+
+  // Always show banner if permission is denied - give user another chance
+  if (permission === 'denied') {
+    return true;
+  }
+
+  // Don't show if already granted
+  if (permission === 'granted') {
+    return false;
+  }
+
+  // For 'default' permission, check dismissal time
+  const dismissed = localStorage.getItem(CONFIG.dismissalKey);
+  const dismissalTime = parseInt(dismissed) || 0;
+  const sevenDaysAgo = Date.now() - (CONFIG.dismissalDays * 24 * 60 * 60 * 1000);
+
+  return !dismissed || dismissalTime < sevenDaysAgo;
+}
+
 // Show the push notification banner
 function showPushNotificationBanner() {
   const banner = document.getElementById('spree-push-notification-banner');
@@ -172,7 +200,7 @@ function showPushNotificationBanner() {
     if (denyBtn) {
       denyBtn.addEventListener('click', function() {
         banner.style.display = 'none';
-        localStorage.setItem('spree_notification_prompt_dismissed', Date.now());
+        localStorage.setItem(CONFIG.dismissalKey, Date.now());
       });
     }
   } else {
@@ -213,7 +241,7 @@ function checkSubscription(registration) {
 // Subscribe user to push notifications
 function subscribeUserToPush(registration) {
   // Get the server's public key
-  return fetch('/api/push/public-key')
+  return fetch('/spree/api/push/env')
     .then(function(response) {
       if (!response.ok) {
         throw new Error('Failed to fetch public key');
@@ -221,11 +249,11 @@ function subscribeUserToPush(registration) {
       return response.json();
     })
     .then(function(data) {
-      if (!data.publicKey) {
-        throw new Error('Public key is missing from response');
+      if (!data.vapidPublicKey) {
+        throw new Error('VAPID public key is missing from response');
       }
 
-      const applicationServerKey = urlB64ToUint8Array(data.publicKey);
+      const applicationServerKey = urlB64ToUint8Array(data.vapidPublicKey);
 
       // Subscribe the user
       return registration.pushManager.subscribe({
@@ -310,14 +338,18 @@ function subscribeUserToPush(registration) {
 
 // Send the subscription to the server
 function updateSubscriptionOnServer(subscription) {
-  return fetch('/api/push/subscribe', {
+  return fetch('/spree/api/push/subscriptions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-Token': getCSRFToken()
+      'X-Requested-With': 'XMLHttpRequest'
     },
     body: JSON.stringify({
-      subscription: subscription.toJSON()
+      subscription: {
+        endpoint: subscription.endpoint,
+        p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
+        auth: arrayBufferToBase64(subscription.getKey('auth'))
+      }
     })
   })
   .then(function(response) {
@@ -358,6 +390,17 @@ function urlB64ToUint8Array(base64String) {
     console.error('Spree Push Notifications: Error converting base64 string to Uint8Array:', error);
     throw new Error('Invalid VAPID key format');
   }
+}
+
+// Utility function to convert ArrayBuffer to Base64
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
 }
 
 // Expose functions globally for manual use

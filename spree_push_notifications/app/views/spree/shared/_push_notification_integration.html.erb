@@ -1,35 +1,18 @@
-<%# Push Notification Integration Partial %>
-<%# This partial includes the necessary JavaScript and initialization for push notifications %>
+<%# Spree Push Notifications Integration %>
+<%# This partial loads the push notification JavaScript module which handles everything dynamically %>
+<%# No HTML templates needed - the JavaScript creates all UI elements dynamically %>
 
-<script>
-// Initialize push notification functionality when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  // Only initialize if push notifications are supported
-  if ('serviceWorker' in navigator && 'PushManager' in window) {
-    // The actual push notification logic is loaded via importmap
-    // from spree/push_notifications.js which handles:
-    // - Service worker registration
-    // - Permission requests
-    // - Subscription management
-    console.log('Push notifications supported - initialization handled by spree/push_notifications.js');
-  } else {
-    console.log('Push notifications not supported in this browser');
-  }
-});
-</script>
+<%# The push notification functionality is automatically loaded via importmap from: %>
+<%# - spree/push_notifications.js (main logic, banner creation, permission handling) %>
+<%# - /service-worker.js (service worker for receiving push notifications) %>
 
-<%# Service Worker Registration Script %>
-<script>
-// Register service worker for push notifications
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(function(registration) {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      })
-      .catch(function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-      });
-  });
-}
-</script>
+<%# Environment check to ensure proper configuration %>
+<% if Rails.env.development? || ENV['VAPID_PUBLIC_KEY'].present? %>
+  <%# All functionality is handled by the JavaScript module loaded via importmap %>
+  <%# The banner and all interactions are created dynamically when needed %>
+<% else %>
+  <!-- Push notifications require VAPID keys to be configured -->
+  <script>
+    console.warn('Spree Push Notifications: VAPID keys not configured. Push notifications will not work.');
+  </script>
+<% end %>

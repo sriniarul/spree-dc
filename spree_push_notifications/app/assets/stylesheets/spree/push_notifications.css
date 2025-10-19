@@ -1,22 +1,23 @@
 /* Spree Push Notifications Styles */
 
-#spree-push-notification-banner {
+#spree-push-banner {
   display: none;
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 300px;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 16px;
-  z-index: 9999;
-  animation: spree-slide-in 0.3s ease-out;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 20px;
+  z-index: 10000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  animation: spree-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes spree-slide-in {
+@keyframes spree-slide-up {
   from {
     transform: translateY(100px);
     opacity: 0;
@@ -27,76 +28,82 @@
   }
 }
 
-#spree-push-notification-banner h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
+#spree-push-banner h4 {
+  margin: 0 0 8px 0;
   font-size: 16px;
-  color: #333;
   font-weight: 600;
+  color: #1a1a1a;
 }
 
-#spree-push-notification-banner p {
-  margin-bottom: 12px;
+#spree-push-banner p {
+  margin: 0 0 16px 0;
   font-size: 14px;
-  color: #666;
   line-height: 1.4;
+  color: #666;
 }
 
 .spree-notification-buttons {
   display: flex;
-  justify-content: space-between;
   gap: 8px;
 }
 
-#spree-notification-allow {
-  background-color: #4CAF50;
+#spree-allow-btn {
+  flex: 1;
+  background: #2563eb;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
   font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
   transition: background-color 0.2s;
+}
+
+#spree-allow-btn:hover {
+  background: #1d4ed8;
+}
+
+#spree-deny-btn {
   flex: 1;
-}
-
-#spree-notification-allow:hover {
-  background-color: #45a049;
-}
-
-#spree-notification-deny {
-  background-color: #f1f1f1;
-  color: #333;
+  background: #f3f4f6;
+  color: #374151;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
   font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
   transition: background-color 0.2s;
-  flex: 1;
 }
 
-#spree-notification-deny:hover {
-  background-color: #e7e7e7;
+#spree-deny-btn:hover {
+  background: #e5e7eb;
 }
 
-#spree-notification-success {
+#spree-push-success {
   display: none;
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #4CAF50;
+  background: #10b981;
   color: white;
-  padding: 16px;
+  padding: 16px 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
-  animation: spree-fade-in 0.3s ease-out;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  z-index: 10000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
   font-weight: 500;
+  animation: spree-fade-in 0.3s ease;
+  max-width: calc(100vw - 40px);
+  line-height: 1.4;
+}
+
+#spree-push-success.error {
+  background: #f59e0b;
+  max-width: 400px;
+  white-space: pre-line;
 }
 
 @keyframes spree-fade-in {
@@ -104,63 +111,89 @@
   to { opacity: 1; }
 }
 
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  #spree-push-notification-banner {
-    width: calc(100% - 40px);
+@media (max-width: 480px) {
+  #spree-push-banner {
     bottom: 10px;
     right: 10px;
     left: 10px;
+    width: auto;
+    max-width: none;
   }
 
-  #spree-notification-success {
-    width: calc(100% - 40px);
+  #spree-push-success {
     bottom: 10px;
     right: 10px;
     left: 10px;
+    max-width: none;
   }
 
   .spree-notification-buttons {
     flex-direction: column;
     gap: 8px;
   }
+
+  #spree-allow-btn,
+  #spree-deny-btn {
+    flex: none;
+  }
 }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  #spree-push-notification-banner {
-    background-color: #2d3748;
+  #spree-push-banner {
+    background: #2d3748;
     border-color: #4a5568;
-  }
-
-  #spree-push-notification-banner h4 {
     color: #f7fafc;
   }
 
-  #spree-push-notification-banner p {
+  #spree-push-banner h4 {
+    color: #f7fafc;
+  }
+
+  #spree-push-banner p {
     color: #cbd5e0;
   }
 
-  #spree-notification-deny {
-    background-color: #4a5568;
+  #spree-deny-btn {
+    background: #4a5568;
     color: #f7fafc;
   }
 
-  #spree-notification-deny:hover {
-    background-color: #2d3748;
+  #spree-deny-btn:hover {
+    background: #2d3748;
   }
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  #spree-push-notification-banner {
+  #spree-push-banner {
     border: 2px solid #000;
     box-shadow: none;
   }
 
-  #spree-notification-allow,
-  #spree-notification-deny {
+  #spree-allow-btn,
+  #spree-deny-btn {
     border: 1px solid #000;
     font-weight: 600;
+  }
+
+  #spree-push-success {
+    border: 2px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  #spree-push-banner {
+    animation: none;
+  }
+
+  #spree-push-success {
+    animation: none;
+  }
+
+  #spree-allow-btn,
+  #spree-deny-btn {
+    transition: none;
   }
 }

@@ -12,7 +12,7 @@ module Spree
       failure_count = 0
 
       subscriptions.find_each(batch_size: 100) do |subscription|
-        result = Spree::PushNotificationService.send_to_subscription(
+        result = PushNotificationService.send_to_subscription(
           subscription,
           title,
           message,
