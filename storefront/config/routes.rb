@@ -1,4 +1,9 @@
 Spree::Core::Engine.add_routes do
+  # OAuth routes
+  devise_for :users, class_name: "Spree::User", controllers: {
+    omniauth_callbacks: 'spree/omniauth_callbacks'
+  }
+
   scope '(:locale)', locale: /#{Spree.available_locales.join('|')}/, defaults: { locale: nil } do
     # store password protection
     get '/password', to: 'password#show', as: :password
