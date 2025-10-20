@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (Notification.permission === 'granted') {
         // Check if we have a valid subscription
         checkSubscription(registration);
-      } else if (shouldShowBanner()) {
+      // } else if (shouldShowBanner()) {
+      } else  {
         // Show banner for permission request
         showPushNotificationBanner();
       }
