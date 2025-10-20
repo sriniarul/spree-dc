@@ -1,24 +1,25 @@
 module Spree
   module OauthHelper
-    # Generate Google OAuth login button
+    # Generate Google OAuth login button with proper Google branding
     def google_oauth_login_button(options = {})
       return unless oauth_enabled?
 
-      button_class = options[:class] || 'w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-      button_text = options[:text] || I18n.t('spree.oauth.sign_in_with_google')
+      button_text = options[:text] || 'Sign in with Google'
+      button_class = options[:class] || 'w-full bg-white hover:bg-gray-50 border border-gray-300 rounded-lg px-6 py-3 text-sm font-medium text-gray-800 shadow-sm transition-all duration-200 ease-in-out flex items-center justify-center space-x-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
 
-      link_to(
-        spree.user_google_oauth2_omniauth_authorize_path,
+      form_with(
+        url: spree.user_google_oauth2_omniauth_authorize_path,
         method: :post,
-        class: button_class,
-        data: {
-          turbo: false,
-          'disable-with': I18n.t('spree.oauth.signing_in')
-        }
-      ) do
-        content_tag(:span, class: 'flex items-center') do
-          google_icon_svg +
-          content_tag(:span, button_text, class: 'ml-2')
+        local: true,
+        class: 'w-full'
+      ) do |f|
+        f.button(
+          type: 'submit',
+          class: button_class,
+          data: { 'disable-with': 'Signing in...' }
+        ) do
+          google_icon_svg.html_safe +
+          content_tag(:span, button_text, class: 'font-medium')
         end
       end
     end
@@ -28,17 +29,17 @@ module Spree
       defined?(Devise) &&
       Spree.user_class.respond_to?(:omniauth_providers) &&
       Spree.user_class.omniauth_providers&.include?(:google_oauth2) &&
-      Rails.application.credentials.google&.client_id.present?
+      (Rails.application.credentials.google&.client_id.present? || ENV['GOOGLE_OAUTH_CLIENT_ID'].present?)
     end
 
-    # Google icon SVG
+    # Authentic Google "G" icon SVG
     def google_icon_svg
       content_tag(:svg,
         viewBox: '0 0 24 24',
-        class: 'w-5 h-5',
-        fill: 'none',
+        class: 'w-5 h-5 flex-shrink-0',
         xmlns: 'http://www.w3.org/2000/svg'
       ) do
+        # Google's official "G" logo paths
         concat(
           content_tag(:path,
             '',
@@ -70,23 +71,47 @@ module Spree
       end
     end
 
-    # Alternative text-based Google button for simpler styling
+    # Compact Google OAuth button
+    def google_oauth_compact_button(options = {})
+      return unless oauth_enabled?
+
+      form_with(
+        url: spree.user_google_oauth2_omniauth_authorize_path,
+        method: :post,
+        local: true,
+        class: 'inline-block'
+      ) do |f|
+        f.button(
+          type: 'submit',
+          class: 'bg-white hover:bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-800 shadow-sm transition-all duration-200 ease-in-out flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+          data: { 'disable-with': 'Signing in...' }
+        ) do
+          google_icon_svg.html_safe +
+          content_tag(:span, 'Google', class: 'font-medium')
+        end
+      end
+    end
+
+    # Alternative text-based Google link (still uses form for CSRF protection)
     def google_oauth_text_link(text = nil, options = {})
       return unless oauth_enabled?
 
       text ||= I18n.t('spree.oauth.sign_in_with_google')
-      css_classes = options[:class] || 'text-blue-600 hover:text-blue-800 underline'
 
-      link_to(
-        text,
-        spree.user_google_oauth2_omniauth_authorize_path,
+      form_with(
+        url: spree.user_google_oauth2_omniauth_authorize_path,
         method: :post,
-        class: css_classes,
-        data: {
-          turbo: false,
-          'disable-with': I18n.t('spree.oauth.signing_in')
-        }
-      )
+        local: true,
+        class: 'inline-block'
+      ) do |f|
+        f.button(
+          type: 'submit',
+          class: 'text-blue-600 hover:text-blue-800 underline bg-transparent border-0 p-0 cursor-pointer',
+          data: { 'disable-with': I18n.t('spree.oauth.signing_in') }
+        ) do
+          text
+        end
+      end
     end
   end
 end
