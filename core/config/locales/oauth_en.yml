@@ -1,0 +1,22 @@
+en:
+  spree:
+    oauth:
+      sign_in_with_google: "Sign in with Google"
+      continue_with_google: "Continue with Google"
+      signing_in: "Signing in..."
+      login_failed: "Login failed: %{message}"
+      unknown_error: "Unknown error occurred"
+      account_created_successfully: "Account created successfully with %{provider}!"
+      signed_in_successfully: "Successfully signed in with %{provider}!"
+      account_creation_failed: "Account creation failed. Please try again or contact support."
+      account_linked_successfully: "Your account has been linked with %{provider}."
+
+    # User model translations
+    activerecord:
+      attributes:
+        spree/user:
+          provider: "Login Provider"
+          uid: "Provider ID"
+          first_name: "First Name"
+          last_name: "Last Name"
+          image_url: "Profile Image"

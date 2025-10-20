@@ -32,7 +32,8 @@ module Spree
                     controllers: {
                       sessions: 'spree/user_sessions',
                       passwords: 'spree/user_passwords',
-                      registrations: 'spree/user_registrations'
+                      registrations: 'spree/user_registrations',
+                      omniauth_callbacks: 'spree/users/omniauth_callbacks'
                     },
                     router_name: :spree
                   )

@@ -43,6 +43,13 @@ module Spree
         ENV['SPREE_STOREFRONT_PATH'] = root.to_s
       end
 
+      # Load OAuth routes if Devise and OAuth gems are available
+      initializer 'spree.storefront.oauth_routes', after: 'spree.load_routes' do
+        if defined?(Devise) && File.exist?(root.join('config', 'oauth_routes.rb'))
+          load root.join('config', 'oauth_routes.rb')
+        end
+      end
+
       config.after_initialize do
         Rails.application.config.spree_storefront.head_partials = []
         Rails.application.config.spree_storefront.body_start_partials = []
