@@ -1,7 +1,16 @@
 # OAuth configuration for Devise
-if defined?(Devise)
+begin
+  # Explicitly require OAuth gems
+  require 'omniauth'
+  require 'omniauth-google-oauth2'
+  require 'omniauth/rails_csrf_protection'
+rescue LoadError => e
+  Rails.logger.info "OAuth gems not available: #{e.message}"
+end
+
+if defined?(Devise) && defined?(OmniAuth::Strategies::GoogleOauth2)
   Devise.setup do |config|
-    # Add OAuth providers
+    # Add OAuth providers only if credentials are available
     if Rails.application.credentials.google&.client_id && Rails.application.credentials.google&.client_secret
       config.omniauth :google_oauth2,
                       Rails.application.credentials.google.client_id,
@@ -32,7 +41,7 @@ end
 
 # Configure User model for OAuth after initialization
 Rails.application.config.after_initialize do
-  if defined?(Devise) && defined?(Spree) && Spree.respond_to?(:user_class)
+  if defined?(Devise) && defined?(Spree) && Spree.respond_to?(:user_class) && defined?(OmniAuth::Strategies::GoogleOauth2)
     user_class = Spree.user_class
     if user_class.respond_to?(:devise_modules) && user_class.devise_modules.present?
       unless user_class.devise_modules.include?(:omniauthable)
