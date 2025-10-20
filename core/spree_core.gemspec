@@ -65,4 +65,8 @@ Gem::Specification.new do |s|
   s.add_dependency 'any_ascii', '~> 0.3.2'
   s.add_dependency 'safely_block', '~> 0.4'
   s.add_dependency 'phonelib', '~> 0.10'
+  # OAuth dependencies for social login
+  s.add_dependency 'omniauth', '~> 2.0'
+  s.add_dependency 'omniauth-google-oauth2', '~> 1.0'
+  s.add_dependency 'omniauth-rails_csrf_protection', '~> 1.0'
 end

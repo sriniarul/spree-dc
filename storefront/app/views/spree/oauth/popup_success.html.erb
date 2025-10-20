@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Authentication Successful</title>
+  <meta charset="utf-8">
+</head>
+<body>
+  <script>
+    // Close popup and refresh parent window
+    if (window.opener) {
+      window.opener.location.reload();
+      window.close();
+    } else {
+      // Fallback if not in popup
+      window.location.href = '<%= spree.root_path %>';
+    }
+  </script>
+
+  <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+    <h2>Authentication successful!</h2>
+    <p>This window should close automatically...</p>
+    <p><a href="#" onclick="window.close()">Close this window</a></p>
+  </div>
+</body>
+</html>

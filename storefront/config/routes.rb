@@ -89,6 +89,7 @@ Spree::Core::Engine.add_routes do
     root to: 'home#index'
   end
 
+
   get 'robots.txt' => 'seo#robots'
   get 'sitemap' => 'seo#sitemap'
   get 'sitemap.xml.gz' => 'seo#sitemap'

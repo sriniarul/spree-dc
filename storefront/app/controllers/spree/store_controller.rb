@@ -19,6 +19,7 @@ module Spree
     helper 'spree/addresses'
     helper 'spree/wishlist'
     helper 'spree/integrations'
+    helper 'spree/oauth'
 
     helper_method :title
     helper_method :title=

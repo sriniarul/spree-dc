@@ -88,3 +88,9 @@ en:
         remove_error: You already removed this item from your wishlist
         select_variant: Select variant to add to wishlist
         unavailable: Unavailable
+    oauth:
+      sign_in_with_google: "Sign in with Google"
+      signing_in: "Signing in..."
+      signed_in_successfully: "Successfully signed in with Google!"
+      authentication_failed: "Google authentication failed. Please try again."
+      account_creation_failed: "Unable to create account from Google. Please try again or sign up manually."

@@ -14,9 +14,28 @@
   <%- if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != 'user_unlocks' %>
     <%= link_to Spree.t(:didn_t_receive_unlock_instructions), new_unlock_path(resource_name) %>
   <% end %>
+  <!-- Google OAuth Button -->
   <%- if devise_mapping.omniauthable? %>
     <%- resource_class.omniauth_providers.each do |provider| %>
-      <%= button_to Spree.t(:sign_in_with_provider, provider: OmniAuth::Utils.camelize(provider)), omniauth_authorize_path(resource_name, provider), data: { turbo: false } %>
+      <%- if provider.to_s == 'google_oauth2' %>
+        <div class="mt-4">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+          <div class="mt-4">
+            <%= google_oauth_login_button %>
+          </div>
+        </div>
+        <!-- Include popup JavaScript -->
+        <%= google_oauth_popup_script %>
+      <%- else %>
+        <%= button_to Spree.t(:sign_in_with_provider, provider: OmniAuth::Utils.camelize(provider)), omniauth_authorize_path(resource_name, provider), data: { turbo: false } %>
+      <%- end %>
     <% end %>
   <% end %>
 </div>
