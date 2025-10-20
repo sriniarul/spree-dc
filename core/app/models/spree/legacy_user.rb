@@ -4,7 +4,6 @@ module Spree
     include Spree::UserAddress
     include Spree::UserPaymentSource
     include Spree::UserMethods
-    include Spree::UserOauth
 
     self.table_name = 'spree_users'
 
