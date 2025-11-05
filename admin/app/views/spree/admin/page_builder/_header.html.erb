@@ -1,7 +1,8 @@
 <header id="page-builder-header" class="fixed-top">
   <nav class="navbar navbar-expand-lg">
     <div data-controller="tooltip">
-      <%= link_to spree.admin_themes_path, class: 'btn hover-gray px-2' do %>
+      <% back_url = @page.custom? ? spree.admin_pages_path : spree.admin_themes_path %>
+      <%= link_to back_url, class: 'btn hover-gray px-2' do %>
         <%= icon('x', class: 'mr-0') %>
       <% end %>
       <%= tooltip(Spree.t('admin.back_to_dashboard')) %>
@@ -12,9 +13,7 @@
         <strong><%= @page.display_name %></strong>
       </div>
 
-      <span data-toggle="modal" data-target="#modal">
-        <%= link_to_with_icon 'settings', Spree.t(:settings), spree.edit_admin_page_path(@page.id), class: 'btn btn-light', data: { turbo_frame: 'dialog_modal' } %>
-      </span>
+      <%= link_to_with_icon 'settings', Spree.t(:settings), spree.edit_admin_page_path(@page.id), class: 'btn btn-light', data: { turbo_frame: 'dialog', action: 'dialog#open' } %>
     <% else %>
       <div class="px-3">
         <span class="text-muted mr-1"><%= Spree.t(:theme) %>:</span>
@@ -37,8 +36,8 @@
         <li class="nav-item" role="presentation">
           <button class="nav-link active"
                         data-controller="tooltip"
-                        data-toggle="tab"
-                        data-target="#sections"
+                        data-tabs-target="tab"
+                        data-action="click->tabs#select"
                         type="button"
                         role="tab"
                         aria-controls="sections"
@@ -52,8 +51,8 @@
         <li class="nav-item" role="presentation">
           <button class="nav-link"
                   data-controller="tooltip"
-                  data-toggle="tab"
-                  data-target="#colors"
+                  data-tabs-target="tab"
+                  data-action="click->tabs#select"
                   type="button"
                   role="tab"
                   aria-controls="theme"
@@ -68,8 +67,8 @@
           <button class="nav-link"
                 data-controller="tooltip"
                 type="button"
-                data-toggle="tab"
-                data-target="#fonts"
+                data-tabs-target="tab"
+                data-action="click->tabs#select"
                 type="button"
                 role="tab"
                 aria-controls="fonts"

@@ -2,6 +2,8 @@ module Spree
   module Admin
     module TurboHelper
       def turbo_close_modal(modal_id = nil)
+        Spree::Deprecation.warn('turbo_close_modal is deprecated and will be removed in Spree 6. Use turbo_close_dialog instead.')
+
         modal_id ||= 'modal'
 
         turbo_stream.replace :modal_scripts do
@@ -17,9 +19,9 @@ module Spree
         end
       end
 
-      def turbo_hide_drawer
-        turbo_stream.replace 'drawer-dialog' do
-          render 'spree/admin/shared/drawer'
+      def turbo_close_dialog
+        turbo_stream.replace 'main-dialog' do
+          render 'spree/admin/shared/dialog'
         end
       end
 
@@ -33,8 +35,13 @@ module Spree
         opts[:class] ||= 'btn btn-primary text-center'
         opts[:class] << ' d-flex align-items-center justify-content-center' if opts[:class].exclude?('d-block') && opts[:class].exclude?('d-flex')
 
-        opts['data-turbo-submits-with'] ||= "#{content_tag(:span, '', class: 'spinner-border spinner-border-sm mr-2', role: 'status')}Saving..."
+        opts['data-turbo-submits-with'] ||= "#{content_tag(:span, '', class: 'spinner-border spinner-border-sm', role: 'status')}"
         opts['data-enable-button-target'] = 'button'
+        if opts['data-controller'].present?
+          opts['data-controller'] += ' turbo-submit-button'
+        else
+          opts['data-controller'] = 'turbo-submit-button'
+        end
 
         if block_given?
           button_tag opts, &block

@@ -33,7 +33,6 @@ bundle exec rails new sandbox --database="$RAILSDB" \
   --skip-keeps \
   --skip-rc \
   --skip-test \
-  --skip-asset-pipeline \
   --skip-docker \
   --skip-rubocop \
   --skip-brakeman \
@@ -50,6 +49,7 @@ fi
 cd ./sandbox
 
 cat <<RUBY >> Gemfile
+gem 'redis'
 gem 'devise'
 gem 'spree', path: '..'
 gem 'spree_emails', path: '../emails'
@@ -67,6 +67,7 @@ group :test, :development do
   gem 'pry-byebug'
   gem 'awesome_print'
   gem 'letter_opener'
+  gem 'listen'
 end
 RUBY
 
@@ -78,6 +79,15 @@ if Rails.env.development? && defined?(Bullet)
   Bullet.rails_logger = true
   Bullet.stacktrace_includes = [ 'spree_core', 'spree_storefront', 'spree_api', 'spree_admin', 'spree_emails' ]
 end
+RUBY
+
+# configure actioncable to use redis
+rm -rf config/cable.yml
+touch config/cable.yml
+cat <<RUBY >> config/cable.yml
+development:
+  adapter: redis
+  url: redis://localhost:6379/0
 RUBY
 
 bundle update
@@ -98,10 +108,12 @@ bin/rails g spree_stripe:install
 bin/rails g spree_google_analytics:install
 bin/rails g spree_klaviyo:install
 bin/rails g spree_paypal_checkout:install
-# setup letter_opener
+# setup letter_opener & listen gem
+# https://github.com/rails/propshaft?tab=readme-ov-file#improving-performance-in-development
 cat <<RUBY >> config/environments/development.rb
 Rails.application.config.action_mailer.delivery_method = :letter_opener
 Rails.application.config.action_mailer.perform_deliveries = true
+Rails.application.config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 RUBY
 
 # add web to Procfile.dev

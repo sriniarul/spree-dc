@@ -4,6 +4,7 @@ module Spree
       def link_to_show_json(record, options = {})
         return unless json_serializers_available?(record)
         return unless can?(:read, record)
+        return unless can?(:read, :json_preview)
 
         options[:class] ||= 'dropdown-item'
         options[:data] ||= { action: 'drawer#open', turbo_frame: :drawer }
@@ -11,7 +12,7 @@ module Spree
         link_to_with_icon(
           'code',
           Spree.t('admin.show_json'),
-          spree.admin_json_preview_resource_path(record, resource_type: record.class.to_s),
+          spree.admin_json_preview_resource_path(record.id, resource_type: record.class.to_s),
           options
         )
       end
@@ -66,6 +67,7 @@ module Spree
         params = {}
         params[:store] = current_store if defined?(current_store) && current_store.present?
         params[:currency] = current_currency if defined?(current_currency) && current_currency.present?
+        params[:locale] = current_locale if defined?(current_locale) && current_locale.present?
         params
       end
     end

@@ -2,10 +2,18 @@
 html {
   min-height: 100%;
   letter-spacing: normal;
+  text-rendering: optimizeLegibility;
+  text-size-adjust: 100%;
 }
 body {
   @extend .h-100;
   overflow-y:scroll;
+}
+
+body * {
+  &:focus {
+    outline-color: theme-color('blue') !important;
+  }
 }
 
 html, body {
@@ -23,7 +31,7 @@ strong {
 }
 
 .font-weight-semibold {
-  font-weight: 500 !important;
+  font-weight: $font-weight-medium !important;
 }
 
 .text-size-lg, .font-size-lg {
@@ -313,13 +321,6 @@ small,
   font-size: $font-size-sm !important;
 }
 
-.alerts-container {
-  position: absolute;
-  width: 100%;
-  z-index: 1070;
-  top: 1rem;
-}
-
 // tailwind matchers
 
 .gap-1 {
@@ -524,7 +525,7 @@ turbo-frame[loading] .spinner-border, turbo-frame[busy] .spinner-border {
   @extend .rounded-pill;
   @extend .text-uppercase;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   padding: 5px 16px ;
   letter-spacing: 2.24px;
   border: 1px solid $gray-200;
@@ -595,6 +596,10 @@ turbo-frame[loading] .spinner-border, turbo-frame[busy] .spinner-border {
     border-radius: 0.25rem !important;
     background-color: rgba($gray-500, 0.25);
   }
+}
+.overflow-visible {
+  overflow-y: visible !important;
+  overflow-x: visible !important;
 }
 
 .outline-none	{
@@ -688,7 +693,7 @@ div.uppy-Root {
   background-color: $gray-200;
   color: $gray-500;
   font-size: $font-size-base;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -697,20 +702,16 @@ div.uppy-Root {
 .breadcrumb {
   gap: 0.5rem;
   align-items: center;
-  color: $gray-500;
-  font-size: $font-size-sm;
+  color: $text-muted;
+  font-weight: $font-weight-medium;
   
-  i {
-    opacity: 0.5;
-  }
-
   li {
     a {
-      color: $gray-500;
       text-decoration: none;
 
       &:hover {
         color: $primary;
+        text-decoration: underline;
       }
     }
   }

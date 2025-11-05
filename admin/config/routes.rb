@@ -143,6 +143,16 @@ Spree::Core::Engine.add_routes do
     # json preview
     resources :json_previews, only: [:show], path: '/json_preview/:resource_type', as: :json_preview_resource
 
+    # imports
+    resources :imports, only: [:new, :create, :show] do
+      resources :mappings, only: [:edit, :update], controller: 'import_mappings'
+      resources :rows, only: :show, controller: 'import_rows'
+
+      member do
+        put :complete_mapping
+      end
+    end
+
     # audit log
     resources :exports, only: [:index, :new, :create, :show]
 
@@ -252,7 +262,11 @@ Spree::Core::Engine.add_routes do
     resources :webhooks_subscribers
 
     # errors
-    get '/forbidden', to: 'errors#forbidden', as: :forbidden
+    get '/forbidden', to: 'errors#show', code: 403, as: :forbidden
+    if Rails.env.test?
+      get '/errors', to: 'errors#show'
+      get '/errors/:path', to: 'errors#show', as: :pathed_errors
+    end
 
     # dashboard
     resource :dashboard, controller: 'dashboard'

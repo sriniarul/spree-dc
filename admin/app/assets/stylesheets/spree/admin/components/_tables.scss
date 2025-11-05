@@ -33,19 +33,19 @@ table.table {
 
   thead {
     th {
-      background-color: rgba($gray-25, 0.75);
+      background-color: $light;
       @extend .text-muted;
-      font-size: $font-size-sm;
+      font-size: $font-size-base;
       font-weight: $font-weight-normal;
       vertical-align: middle;
-      padding-top: 0.3rem;
-      padding-bottom: 0.3rem;
+      padding-top: 0.45rem;
+      padding-bottom: 0.45rem;
     }
     th:first-child {
-      border-top-left-radius: $border-radius-lg;
+      border-top-left-radius: $card-border-radius;
     }
     th:last-child {
-      border-top-right-radius: $border-radius-lg;
+      border-top-right-radius: $card-border-radius;
     }
   }
 
@@ -79,16 +79,16 @@ table.table {
 
     tr:hover:not(.active):not(.sortable-chosen) {
       td {
-        background-color: rgba($gray-25, 0.5);
+        background-color: rgba($gray-25, 0.75);
       }
     }
 
     tr:last-child {
       td:first-child {
-        border-bottom-left-radius: $border-radius-lg;
+        border-bottom-left-radius: $card-border-radius;
       }
       td:last-child {
-        border-bottom-right-radius: $border-radius-lg;
+        border-bottom-right-radius: $card-border-radius;
       }
     }
   }
@@ -209,8 +209,8 @@ td.actions {
   bottom: 0;
   background-color: $card-bg;
   z-index: 100;
-  border-bottom-left-radius: $border-radius-lg;
-  border-bottom-right-radius: $border-radius-lg;
+  border-bottom-left-radius: $card-border-radius;
+  border-bottom-right-radius: $card-border-radius;
 
   .page-link {
     @extend .btn;

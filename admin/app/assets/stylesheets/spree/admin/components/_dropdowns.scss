@@ -20,34 +20,41 @@
   }
 }
 
-.dropdown-menu {
+.dropdown-menu, .dropdown-container {
   margin-top: 0.25rem !important;
   overflow: hidden !important;
   box-shadow: $dropdown-box-shadow;
+  border-radius: $dropdown-border-radius;
+  box-shadow: $dropdown-box-shadow;
+  background-color: $dropdown-bg;
+  z-index: $zindex-dropdown;
+  min-width: $dropdown-min-width;
+  padding: $dropdown-padding-y $dropdown-padding-x;
+  font-size: $dropdown-font-size;
+  color: $dropdown-color;
 
   .dropdown-item, .dropdown-header {
-    padding-top: $input-btn-padding-y;
-    padding-bottom: $input-btn-padding-y;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-top: $dropdown-item-padding-y;
+    padding-bottom: $dropdown-item-padding-y;
+    padding-left: $dropdown-item-padding-x;
+    padding-right: $dropdown-item-padding-x;
   }
   .dropdown-header {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    margin-bottom: 0.25rem;
+    margin-top: 0.25rem;
   }
 
   .dropdown-item {
     margin-bottom: 0.25rem;
-    border-radius: $border-radius;
+    border-radius: $dropdown-inner-border-radius;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     background: transparent;
-    padding-top: 0.4rem;
-    padding-bottom: 0.4rem;
-    margin-bottom: 0.15rem;
 
-    color: $gray-700;
+    transition-property: background-color, color;
+    transition-duration: 0.01s;
+    transition-timing-function: ease;
 
     &:hover {
       background-color: $dropdown-link-hover-bg;
@@ -77,7 +84,7 @@
       content: '';
       display: inline-block;
       position: absolute;
-      right: 0.5rem;
+      right: 0.75rem;
       width: 1rem;
       height: 1rem;
       background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check text-primary"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10"/></svg>') no-repeat center center;
@@ -92,10 +99,29 @@
   }
   .dropdown-header {
     font-weight: $font-weight-base;
+    font-size: $font-size-base;
   }
 
   .dropdown-item:last-child {
     margin-bottom: 0px;
+  }
+}
+// new non-bootstrap dropdowns
+.dropdown-container {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  animation: fadeIn 0.15s ease-in-out;
+  transform-origin: top right;
+
+  &.dropdown-container-left {
+    left: 0;
+    right: auto;
+  }
+  &.dropdown-container-top {
+    top: auto;
+    bottom: 100%;
+    height: auto;
   }
 }
 

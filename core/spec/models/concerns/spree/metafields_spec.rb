@@ -22,12 +22,12 @@ RSpec.describe Spree::Metafields, type: :concern do
     let!(:metafield) { create(:metafield, resource: product, metafield_definition: definition) }
 
     it 'returns products with the given metafield key' do
-      expect(Spree::Product.with_metafield_key('custom', 'foo')).to include(product)
+      expect(Spree::Product.with_metafield_key('custom.foo')).to include(product)
     end
 
     it 'does not return products without the given metafield key' do
       other_product = create(:product)
-      expect(Spree::Product.with_metafield_key('custom', 'foo')).not_to include(other_product)
+      expect(Spree::Product.with_metafield_key('custom.foo')).not_to include(other_product)
     end
   end
 
@@ -36,11 +36,11 @@ RSpec.describe Spree::Metafields, type: :concern do
     let!(:metafield) { create(:metafield, resource: product, metafield_definition: definition, value: 'baz') }
 
     it 'returns products with the given metafield key and value' do
-      expect(Spree::Product.with_metafield_key_value('custom', 'bar', 'baz')).to include(product)
+      expect(Spree::Product.with_metafield_key_value('custom.bar', 'baz')).to include(product)
     end
 
     it 'does not return products with the key but different value' do
-      expect(Spree::Product.with_metafield_key_value('custom', 'bar', 'other')).not_to include(product)
+      expect(Spree::Product.with_metafield_key_value('custom.bar', 'other')).not_to include(product)
     end
   end
 
@@ -142,6 +142,96 @@ RSpec.describe Spree::Metafields, type: :concern do
       expect {
         product.update(attrs)
       }.not_to change { product.metafields.count }
+    end
+
+    context 'auto-destroy metafields with empty values' do
+      let!(:metafield) do
+        product.metafields.create!(
+          metafield_definition: definition,
+          value: 'initial value',
+          type: definition.metafield_type
+        )
+      end
+
+      it 'destroys existing metafield when value is set to empty string' do
+        attrs = {
+          metafields_attributes: [
+            {
+              id: metafield.id,
+              metafield_definition_id: definition.id,
+              value: '',
+              type: definition.metafield_type
+            }
+          ]
+        }
+        expect {
+          product.update(attrs)
+        }.to change { product.metafields.count }.by(-1)
+      end
+
+      it 'destroys existing metafield when value is set to nil' do
+        attrs = {
+          metafields_attributes: [
+            {
+              id: metafield.id,
+              metafield_definition_id: definition.id,
+              value: nil,
+              type: definition.metafield_type
+            }
+          ]
+        }
+        expect {
+          product.update(attrs)
+        }.to change { product.metafields.count }.by(-1)
+      end
+
+      it 'updates existing metafield when value is not empty' do
+        attrs = {
+          metafields_attributes: [
+            {
+              id: metafield.id,
+              metafield_definition_id: definition.id,
+              value: 'updated value',
+              type: definition.metafield_type
+            }
+          ]
+        }
+        expect {
+          product.update(attrs)
+        }.not_to change { product.metafields.count }
+        expect(metafield.reload.value).to eq('updated value')
+      end
+
+      it 'handles multiple metafields correctly' do
+        other_definition = create(:metafield_definition, namespace: 'custom', key: 'bar', resource_type: 'Spree::Product')
+        other_metafield = product.metafields.create!(
+          metafield_definition: other_definition,
+          value: 'other value',
+          type: other_definition.metafield_type
+        )
+
+        attrs = {
+          metafields_attributes: [
+            {
+              id: metafield.id,
+              metafield_definition_id: definition.id,
+              value: '',
+              type: definition.metafield_type
+            },
+            {
+              id: other_metafield.id,
+              metafield_definition_id: other_definition.id,
+              value: 'updated other value',
+              type: other_definition.metafield_type
+            }
+          ]
+        }
+        expect {
+          product.update(attrs)
+        }.to change { product.metafields.count }.by(-1)
+        expect(product.metafields.pluck(:id)).not_to include(metafield.id)
+        expect(other_metafield.reload.value).to eq('updated other value')
+      end
     end
   end
 end

@@ -9,7 +9,7 @@
 <% end if show_record_subtitle && !content_for(:page_subtitle) %>
 
 <% if content_for?(:page_title) %>
-  <header id="page-header" class="container-fluid" data-controller="sticky">
+  <header id="page-header" class="container" data-controller="sticky">
     <h3 class="page-header-title mb-0 d-flex align-items-center gap-3">
       <%= yield :page_title %>
     </h3>
@@ -22,11 +22,11 @@
       <% end %>
 
       <% if show_record_subtitle || content_for(:page_actions_dropdown) %>
-        <div class="dropdown h-100" id="page_actions_dropdown">
-          <%= link_to '#', class: 'btn btn-light bg-transparent h-100 p-2', data: { toggle: 'dropdown' }, id: 'more-actions-link' do %>
+        <%= dropdown id: 'page_actions_dropdown', class: 'h-100' do %>
+          <%= dropdown_toggle id: 'more-actions-link', class: 'btn-light h-100 p-2' do %>
             <%= icon 'dots-vertical', class: 'mr-0' %>
           <% end %>
-          <div class="dropdown-menu dropdown-menu-right">
+          <%= dropdown_menu id: 'page_actions_dropdown_menu' do %>
             <%= yield :page_actions_dropdown if content_for(:page_actions_dropdown) %>
             <% if record && record.persisted? %>
               <%= link_to_edit_metafields(record) %>
@@ -40,17 +40,17 @@
                 </a>
               <% end %>
               <% if record.respond_to?(:number) %>
-                <div data-controller="clipboard">
+                <div data-controller="clipboard" data-clipboard-success-content-value='<%= icon('check') + ' ' + Spree.t(:copied) %>'>
                   <%= hidden_field_tag :record_number, record.number, data: { clipboard_target: 'source' } %>
-                  <button data-action="clipboard#copy" class="text-left dropdown-item">
+                  <button data-action="clipboard#copy" class="text-left dropdown-item" data-clipboard-target="button">
                     <%= icon 'copy' %>
                     <%= 'Copy number' %>
                   </button>
                 </div>
               <% end %>
-              <div data-controller="clipboard">
+              <div data-controller="clipboard" data-clipboard-success-content-value='<%= icon('check') + ' ' + Spree.t(:copied) %>'>
                 <%= hidden_field_tag :record_id, record.id, data: { clipboard_target: 'source' } %>
-                <button data-action="clipboard#copy" class="text-left dropdown-item">
+                <button data-action="clipboard#copy" class="text-left dropdown-item" data-clipboard-target="button">
                   <%= icon 'copy' %>
                   <%= Spree.t(:copy_id) %>
                 </button>
@@ -61,24 +61,9 @@
                 <%= link_to_with_icon 'trash', Spree.t('actions.destroy'), object_url, class: 'dropdown-item btn-danger', data: { turbo_method: :delete, turbo_confirm: Spree.t(:are_you_sure) } %>
               <% end %>
             <% end %>
-          </div>
-        </div>
+          <% end %>
+        <% end%>
       <% end %>
     </div>
   </header>
-<% end %>
-
-<% if content_for?(:page_tabs) %>
-  <div class="container-fluid" id="page-tabs">
-    <ul class="nav">
-      <%= yield :page_tabs %>
-    </ul>
-  </div>
-<% end %>
-<% if content_for(:page_alerts) %>
-  <div class="container">
-    <div class="page-alerts">
-      <%= yield(:page_alerts) %>
-    </div>
-  </div>
 <% end %>

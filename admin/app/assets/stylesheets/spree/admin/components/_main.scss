@@ -3,20 +3,42 @@
 }
 
 #page-header {
-  height: 70px;
+  height: 80px;
   display: flex;
   align-items: center;
   background-color: $body-bg;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  border-bottom: 1px solid $border-color;
-  margin-bottom: 1rem;
 
   &.sticky-top {
     padding-left: 1rem;
     padding-right: 1rem;
     animation: slideDown 0.3s ease-out;
     height: $header-height;
+    border-bottom: 1px solid $border-color;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+#settings-header {
+  height: $header-height;
+  background-color: $header-bg;
+  z-index: 1000;
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 0;
+
+  #page-header {
+    margin-bottom: 0;
+    height: $header-height;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100%;
+    border-bottom: 1px solid $border-color;
+  }
+
+  #page-tabs {
     border-bottom: 1px solid $border-color;
   }
 }
@@ -26,10 +48,6 @@
 }
 
 #page-tabs {
-  border-bottom: 1px solid $border-color;
-  margin-bottom: 1rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
   margin-top: -1rem;
 
   .nav {
@@ -65,8 +83,7 @@
   background-color: $sidebar-bg;
   width: $sidebar-width;
   border-right: 1px solid $border-color;
-  border-bottom: 1px solid $border-color;
-  height: $header-height;
+  height: calc($header-height + 1px);
 }
 
 .store-dropdown-button {
@@ -123,7 +140,6 @@
   overflow-x: hidden;
   position: fixed;
   top: $header-height;
-  color: $gray-600;
   padding-top: 0.8rem;
 
   @media (max-width: 992px) {
@@ -139,7 +155,7 @@
   }
 
   .nav-link {
-    border-radius: $border-radius;
+    border-radius: $nav-pills-border-radius;
     display: flex;
     align-items: center;
     padding-left: 0.35rem;
@@ -148,10 +164,12 @@
     padding-bottom: 0.35rem;
     color: inherit;
 
+    transition: background-color 0.1s ease-in-out;
+
     .ti {
       font-size: 1.125rem !important;
       margin-right: 0.5rem;
-      border-radius: $border-radius-sm;
+      border-radius: $border-radius;
       padding: 0.2rem 0.2rem;
     }
 
@@ -166,12 +184,11 @@
       color: theme-color('primary');
       background-color: $white;
       box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.04) 0px 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px, rgba(0, 0, 0, 0.02) 0px 2px 4px 0px;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
 
       .ti {
         background-color: theme-color('primary');
         color: $white;
-        box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px, rgba(0, 0, 0, 0.02) 0px 2px 4px 0px;
       }
     }
 
@@ -260,6 +277,8 @@
   font-size: $font-size-sm;
   padding: 0.5rem 1rem;
   margin: 0.75rem;
+  border-width: 1px;
+  box-shadow: $box-shadow-xs;
   p {
     margin-bottom: 0.5rem;
   }

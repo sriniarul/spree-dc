@@ -1,6 +1,8 @@
 module Spree
   module Admin
     class StoresController < Spree::Admin::BaseController
+      include Spree::Admin::SettingsConcern
+
       before_action :load_store, only: [:edit, :update]
       before_action :normalize_supported_currencies, only: [:update]
       before_action :normalize_supported_locales, only: [:update]
@@ -12,6 +14,7 @@ module Spree
           default_country_iso: current_store.default_country_iso,
           default_currency: current_store.default_currency
         )
+        render :new, layout: 'spree/admin_wizard'
       end
 
       def create
@@ -25,7 +28,7 @@ module Spree
           end
 
           flash[:success] = flash_message_for(@store, :successfully_created)
-          # redirect in view, Turbo doesn't support redirecting to a different host
+          redirect_to spree.admin_getting_started_url(host: @store.url), allow_other_host: true
         else
           render :new, status: :unprocessable_entity
         end

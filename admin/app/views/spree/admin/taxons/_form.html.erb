@@ -54,13 +54,11 @@
           </h5>
 
           <% if @taxon.manual? && can?(:create, Spree::Classification) %>
-            <span data-toggle="modal" data-target="#modal">
-              <%= link_to_with_icon 'plus', Spree.t(:add_products), spree.new_admin_taxon_classification_path(@taxon.id), class: 'btn btn-light btn-sm', data: { turbo_frame: 'dialog_modal' } %>
-            </span>
+            <%= link_to_with_icon 'plus', Spree.t(:add_products), spree.new_admin_taxon_classification_path(@taxon.id), class: 'btn btn-secondary btn-sm', data: { turbo_frame: 'dialog', action: 'dialog#open' } %>
           <% end %>
         </div>
 
-        <div class="card-body border-bottom">
+        <div class="card-body border-bottom pb-0">
           <div class="d-flex align-items-center">
             <%= f.spree_select :sort_order, taxon_sort_options_for_select, {}, { class: 'custom-select custom-select-sm w-auto ml-2',  data: { action: 'change->auto-submit#submit' } } %>
           </div>

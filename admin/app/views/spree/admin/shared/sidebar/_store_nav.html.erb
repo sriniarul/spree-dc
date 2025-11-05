@@ -1,4 +1,4 @@
-<% if settings_active? %>
+<% if settings_area? %>
   <ul class="nav flex-column">
     <% if can?(:manage, current_store) %>
       <%= nav_item(Spree.t(:store_details), spree.edit_admin_store_path(section: 'general-settings'), icon: 'building-store', active: params[:section] == 'general-settings') %>
@@ -67,6 +67,8 @@
       <%= nav_item(Spree.t(:developers), spree.admin_oauth_applications_path, icon: 'terminal', active: %w[oauth_applications webhooks_subscribers].include?(controller_name)) %>
     <% end %>
 
+    <%= nav_item(Spree.t('admin.edit_profile'), spree.edit_admin_profile_path, icon: 'user-scan') %>
+
     <%= render_admin_partials(:settings_nav_partials) %>
   </ul>
 <% else %>
@@ -98,7 +100,6 @@
 
     <%= render_admin_partials(:store_nav_partials) %>
 
-    <li class="nav-item border-top border-top-dashed my-1"></li>
     <%= render 'spree/admin/shared/sidebar/storefront_nav' %>
     <%= render 'spree/admin/shared/sidebar/integrations_nav' %>
   </ul>
