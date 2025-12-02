@@ -125,8 +125,58 @@ module Spree
         :webhooks_subscribers_header_partials,
         :vendors_nav_partials,
         :zones_actions_partials,
-        :zones_header_partials
+        :zones_header_partials,
+        :navigation
       )
+
+      class NavigationEnvironment
+        def initialize
+          @contexts = {}
+        end
+
+        # Register a new navigation context
+        # @param name [Symbol] The name of the navigation context
+        # @return [Spree::Admin::Navigation] The navigation instance
+        def register_context(name)
+          name = name.to_sym
+          @contexts[name] ||= Spree::Admin::Navigation.new(name)
+        end
+
+        # Get a registered navigation context
+        # @param name [Symbol] The name of the navigation context
+        # @return [Spree::Admin::Navigation] The navigation instance
+        # @raise [NoMethodError] if the context hasn't been registered
+        def get_context(name)
+          name = name.to_sym
+          @contexts[name] || raise(NoMethodError, "Navigation context '#{name}' has not been registered. Use Spree.admin.navigation.register_context(:#{name}) first.")
+        end
+
+        # List all registered contexts
+        # @return [Array<Symbol>] Array of registered context names
+        def contexts
+          @contexts.keys
+        end
+
+        # Check if a context exists
+        # @param name [Symbol] The context name to check
+        # @return [Boolean] true if the context is registered
+        def context?(name)
+          @contexts.key?(name.to_sym)
+        end
+
+        # Define accessor methods for predefined and custom contexts
+        def method_missing(method_name, *args)
+          if method_name.to_s.end_with?('=')
+            super
+          else
+            get_context(method_name)
+          end
+        end
+
+        def respond_to_missing?(method_name, include_private = false)
+          method_name.to_s.end_with?('=') ? false : context?(method_name)
+        end
+      end
 
       # accessible via Rails.application.config.spree_admin
       initializer 'spree.admin.environment', before: :load_config_initializers do |app|
@@ -182,12 +232,24 @@ module Spree
         end
       end
 
-      config.after_initialize do
+      config.after_initialize do |app|
         Environment.new.tap do |env|
           env.members.each do |key|
             Rails.application.config.spree_admin.send("#{key}=", [])
           end
         end
+
+        # Register predefined navigation contexts
+        app.config.spree_admin.navigation = NavigationEnvironment.new
+        app.config.spree_admin.navigation.register_context(:sidebar)
+        app.config.spree_admin.navigation.register_context(:settings)
+        app.config.spree_admin.navigation.register_context(:tax_tabs)
+        app.config.spree_admin.navigation.register_context(:shipping_tabs)
+        app.config.spree_admin.navigation.register_context(:team_tabs)
+        app.config.spree_admin.navigation.register_context(:stock_tabs)
+        app.config.spree_admin.navigation.register_context(:returns_tabs)
+        app.config.spree_admin.navigation.register_context(:developers_tabs)
+        app.config.spree_admin.navigation.register_context(:audit_tabs)
       end
     end
   end

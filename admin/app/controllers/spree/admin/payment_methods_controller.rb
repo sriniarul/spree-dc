@@ -22,16 +22,6 @@ module Spree
         end
       end
 
-      def collection
-        return @collection if @collection.present?
-
-        params[:q] ||= {}
-
-        @collection = super.order(position: :asc)
-        @search = @collection.ransack(params[:q])
-        @collection = @search.result.page(params[:page]).per(params[:per_page])
-      end
-
       def require_payment_type
         redirect_to spree.admin_payment_methods_path unless params.dig(:payment_method, :type).present?
       end
@@ -43,7 +33,7 @@ module Spree
       def allowed_payment_types
         # We need to map to strings, otherwise some weird things happen with STI
         # where Rails can't find the ancestor class when we try to save the payment method.
-        Rails.application.config.spree.payment_methods.map(&:to_s)
+        Spree.payment_methods.map(&:to_s)
       end
 
       def permitted_resource_params

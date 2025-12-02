@@ -33,6 +33,12 @@ module Spree
           variant.depth = attributes['depth'] if attributes['depth'].present?
           variant.track_inventory = attributes['track_inventory'] if attributes['track_inventory'].present?
           variant.option_value_variants = prepare_option_value_variants
+
+          if attributes['tax_category'].present?
+            tax_category = prepare_tax_category
+            variant.tax_category = tax_category if tax_category.present?
+          end
+
           variant.save!
 
           if attributes['price'].present?
@@ -52,16 +58,26 @@ module Spree
         private
 
         def ensure_product_exists
-          product = Spree::Product.new
-          if attributes['slug'].present?
-            existing_product = product_scope.find_by(slug: attributes['slug'].strip.downcase)
-            product = existing_product if existing_product.present?
-          end
+          if options.empty?
+            # For master variants, create or update the product
+            product = Spree::Product.new
+            if attributes['slug'].present?
+              existing_product = product_scope.find_by(slug: attributes['slug'].strip.downcase)
+              product = existing_product if existing_product.present?
+            end
 
-          product = assign_attributes_to_product(product)
-          product.save!
-          handle_metafields(product)
-          product
+            product = assign_attributes_to_product(product)
+            product.save!
+            handle_metafields(product)
+            product
+          else
+            # For non-master variants, only look up the product
+            if attributes['slug'].present?
+              product_scope.find_by!(slug: attributes['slug'].strip.downcase)
+            else
+              raise ActiveRecord::RecordNotFound, 'Product slug is required for variant rows'
+            end
+          end
         end
 
         def product_scope
@@ -84,8 +100,25 @@ module Spree
           product.status = to_spree_status(attributes['status']) if attributes['status'].present?
           product.tag_list = attributes['tags'] if attributes['tags'].present?
 
-          product.taxons = prepare_taxons if options.empty?
+          if options.empty?
+            if attributes['shipping_category'].present?
+              shipping_category = prepare_shipping_category
+              product.shipping_category = shipping_category if shipping_category.present?
+            end
+            product.taxons = prepare_taxons
+          end
+
           product
+        end
+
+        def prepare_shipping_category
+          shipping_category_name = attributes['shipping_category'].strip
+          Spree::ShippingCategory.find_by(name: shipping_category_name)
+        end
+
+        def prepare_tax_category
+          tax_category_name = attributes['tax_category'].strip
+          Spree::TaxCategory.find_by(name: tax_category_name)
         end
 
         def prepare_taxons

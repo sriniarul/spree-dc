@@ -13,12 +13,10 @@
 
         <%= f.spree_rich_text_area :content,
               help_bubble: 'Add a summary of the post',
-              style: 'height: 300px',
               data: { seo_form_target: 'sourceDescriptionInput' } %>
 
         <%= f.spree_rich_text_area :excerpt,
               help_bubble: 'Add a summary of the post',
-              style: 'height: 100px',
               data: { seo_form_target: 'sourceExcerptInput' } %>
       </div>
     </div>
@@ -27,10 +25,7 @@
   <div class="col-lg-4">
     <div class="card mb-4">
       <div class="card-body">
-        <div class="form-group">
-          <%= f.label :image, Spree.t(:featured_image) %>
-          <%= render 'active_storage/upload_form', form: f, field_name: :image, width: 1200, height: 600, crop: true, css: 'flex-col' %>
-        </div>
+        <%= f.spree_file_field :image, width: 1200, height: 600, crop: true, css: 'flex-col', label: Spree.t(:featured_image) %>
       </div>
     </div>
 

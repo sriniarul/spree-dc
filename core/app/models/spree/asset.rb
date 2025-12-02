@@ -23,7 +23,7 @@ module Spree
     scope :with_session_uploaded_assets_uuid, lambda { |uuid|
       where(session_id: uuid)
     }
-    scope :with_external_url, ->(url) { url.present? ? with_metafield_key_value(EXTERNAL_URL_METAFIELD_KEY, url.downcase.strip) : none }
+    scope :with_external_url, ->(url) { url.present? ? with_metafield_key_value(EXTERNAL_URL_METAFIELD_KEY, url.strip) : none }
 
     def product
       @product ||= viewable_type == 'Spree::Variant' ? viewable&.product : nil
@@ -34,7 +34,7 @@ module Spree
     end
 
     def external_url=(url)
-      set_metafield(EXTERNAL_URL_METAFIELD_KEY, url.downcase.strip)
+      set_metafield(EXTERNAL_URL_METAFIELD_KEY, url.strip)
     end
 
     def skip_import?

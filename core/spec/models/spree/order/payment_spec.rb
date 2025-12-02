@@ -139,12 +139,23 @@ module Spree
     context '#process_payments!' do
       let!(:order) { create(:order_with_line_items) }
       let!(:payment) do
-        payment = create(:payment, amount: 10, order: order)
+        payment = create(:payment, amount: 10, order: order, state: payment_state)
         order.payments << payment
         payment
       end
 
-      before { allow(order).to receive_messages unprocessed_payments: [payment], total: 10 }
+      let(:payment_state) { 'checkout' }
+      let(:unprocessed_payments) { [payment] }
+      let(:pending_payments) { [] }
+      let(:total) { 10 }
+
+      before do
+        allow(order).to receive_messages(
+          unprocessed_payments: unprocessed_payments,
+          pending_payments: pending_payments,
+          total: total
+        )
+      end
 
       it 'processes the payments' do
         expect(payment).to receive(:process!)
@@ -156,6 +167,33 @@ module Spree
         allow(order).to receive_messages unprocessed_payments: []
         expect(payment).not_to receive(:process!)
         expect(order.process_payments!).to be_falsey
+      end
+
+      context 'when there are pending payments' do
+        let(:payment_state) { 'pending' }
+        let(:pending_payments) { [payment] }
+        let(:unprocessed_payments) { [] }
+
+        it 'skips processing the payments' do
+          expect(payment).not_to receive(:process!)
+          expect(order.process_payments!).to be_nil
+        end
+
+        context 'when there is other unprocessed payment' do
+          let(:other_payment) { create(:payment, order: order, amount: 5, state: 'checkout') }
+          let(:unprocessed_payments) { [other_payment] }
+
+          before do
+            order.payments << other_payment
+          end
+
+          it 'processes only the other payment' do
+            expect(payment).not_to receive(:process!)
+            expect(other_payment).to receive(:process!)
+
+            expect(order.process_payments!).to be_truthy
+          end
+        end
       end
 
       context 'when a payment raises a GatewayError' do
@@ -227,19 +265,20 @@ module Spree
       end
 
       it 'incorporates refund reimbursements' do
-        # Creates an order w/total 10
+        # Creates an order w/total 20
         reimbursement = create :reimbursement
-        # Set the payment amount to actually be the order total of 10
-        reimbursement.order.payments.first.update_column :amount, 10
-        # Creates a refund of 10
-        create :refund, amount: 10,
-                        payment: reimbursement.order.payments.first,
+        order = reimbursement.order
+        # Set the payment amount to actually be the order total of 20
+        order.payments.first.update_column :amount, order.total
+        # Creates a refund of 20
+        create :refund, amount: order.total,
+                        payment: order.payments.first,
                         reimbursement: reimbursement
         order = reimbursement.order.reload
         # Update the order totals so payment_total goes to 0 reflecting the refund..
         order.update_with_updater!
         # Order Total - (Payment Total + Reimbursed)
-        # 10 - (0 + 10) = 0
+        # 20 - (0 + 20) = 0
         expect(order.outstanding_balance).to eq 0
       end
 

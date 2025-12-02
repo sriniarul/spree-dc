@@ -22,12 +22,15 @@
       <% end %>
 
       <% if show_record_subtitle || content_for(:page_actions_dropdown) %>
-        <%= dropdown id: 'page_actions_dropdown', class: 'h-100' do %>
+        <%= dropdown id: 'page_actions_dropdown', class: 'h-100', portal: false do %>
           <%= dropdown_toggle id: 'more-actions-link', class: 'btn-light h-100 p-2' do %>
             <%= icon 'dots-vertical', class: 'mr-0' %>
           <% end %>
           <%= dropdown_menu id: 'page_actions_dropdown_menu' do %>
-            <%= yield :page_actions_dropdown if content_for(:page_actions_dropdown) %>
+            <% if content_for?(:page_actions_dropdown) %>
+              <%= yield :page_actions_dropdown %>
+              <div class="dropdown-divider"></div>
+            <% end %>
             <% if record && record.persisted? %>
               <%= link_to_edit_metafields(record) %>
               <%= link_to_edit_translations(record) %>

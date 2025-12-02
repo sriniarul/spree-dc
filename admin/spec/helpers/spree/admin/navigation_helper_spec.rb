@@ -117,4 +117,64 @@ describe Spree::Admin::NavigationHelper, type: :helper do
       end
     end
   end
+
+  describe '#render_navigation' do
+    let(:nav) { Spree.admin.navigation.sidebar }
+
+    before do
+      nav.clear
+      allow(Spree::Admin::RuntimeConfig).to receive(:legacy_sidebar_navigation).and_return(false)
+    end
+
+    it 'returns empty string when legacy navigation is enabled' do
+      allow(Spree::Admin::RuntimeConfig).to receive(:legacy_sidebar_navigation).and_return(true)
+
+      expect(helper.render_navigation(:sidebar)).to eq('')
+    end
+
+    it 'returns empty string when no items are visible' do
+      nav.add :dashboard, label: 'Dashboard', if: -> { false }
+
+      expect(helper.render_navigation(:sidebar)).to eq('')
+    end
+
+    it 'renders navigation partial when items are visible' do
+      nav.add :dashboard, label: 'Dashboard', url: '/admin'
+
+      allow(helper).to receive(:render).and_return('navigation html')
+
+      result = helper.render_navigation(:sidebar)
+
+      expect(result).to eq('navigation html')
+    end
+  end
+
+  describe '#navigation_items' do
+    let(:nav) { Spree.admin.navigation.sidebar }
+
+    before do
+      nav.clear
+    end
+
+    it 'returns visible items for the given context' do
+      nav.add :dashboard, label: 'Dashboard', url: '/admin'
+      nav.add :products, label: 'Products', url: '/admin/products'
+
+      items = helper.navigation_items(:sidebar)
+
+      expect(items.size).to eq(2)
+      expect(items.map(&:key)).to contain_exactly(:dashboard, :products)
+    end
+
+    it 'passes view context for permission checking' do
+      allow(helper).to receive(:can?).with(:manage, Spree::Product).and_return(false)
+
+      nav.add :dashboard, label: 'Dashboard'
+      nav.add :products, label: 'Products', if: -> { can?(:manage, Spree::Product) }
+
+      items = helper.navigation_items(:sidebar)
+
+      expect(items.map(&:key)).to eq([:dashboard])
+    end
+  end
 end

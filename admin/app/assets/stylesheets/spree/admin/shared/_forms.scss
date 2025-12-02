@@ -1,6 +1,10 @@
 .custom-checkbox .custom-control-label::before {
   border-radius: 0.25rem !important;
   border-color: $input-border-color;
+  box-shadow: $input-box-shadow;
+}
+.custom-checkbox .custom-control-label::before, .custom-checkbox .custom-control-label::after {
+  top: 0rem;
 }
 
 label {
@@ -22,7 +26,7 @@ label {
 }
 
 .form-text {
-  font-size: $font-size-sm;
+  font-size: $font-size-base;
   color: $text-muted;
   margin-top: 0;
 }
@@ -70,11 +74,6 @@ input[type="file"] {
   background-repeat: no-repeat !important;
   border-radius: $input-border-radius;
   padding-right: 2.5rem;
-}
-.custom-select, .form-control, .ts-control {
-  &:hover:not(:focus):not(:active):not(.active):not(:focus-visible):not(:focus-within) {
-    border: 1px solid $gray-100;
-  }
 }
 
 .ts-control>input {

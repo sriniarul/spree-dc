@@ -255,8 +255,6 @@ module Spree
     delegate :display_amount, :display_price, :has_default_price?, :track_inventory?,
              :display_compare_at_price, :images, to: :default_variant
 
-    delegate :name, to: :brand, prefix: true, allow_nil: true
-
     alias master_images images
 
     state_machine :status, initial: :draft do
@@ -550,7 +548,22 @@ module Spree
       super || variants_including_master.with_deleted.find_by(is_master: true)
     end
 
+    # Returns the brand for the product
+    # If a brand association is defined (e.g., belongs_to :brand), it will be used
+    # Otherwise, falls back to brand_taxon for compatibility
+    # @return [Spree::Brand, Spree::Taxon]
     def brand
+      if self.class.reflect_on_association(:brand)
+        super
+      else
+        Spree::Deprecation.warn('Spree::Product#brand is deprecated and will be removed in Spree 6. Please use Spree::Product#brand_taxon instead.')
+        brand_taxon
+      end
+    end
+
+    # Returns the brand taxon for the product
+    # @return [Spree::Taxon]
+    def brand_taxon
       @brand ||= if Spree.use_translations?
                    taxons.joins(:taxonomy).
                      join_translation_table(Taxonomy).
@@ -564,7 +577,28 @@ module Spree
                  end
     end
 
+    # Returns the brand name for the product
+    # @return [String]
+    def brand_name
+      brand&.name
+    end
+
+    # Returns the category for the product
+    # If a category association is defined (e.g., belongs_to :category), it will be used
+    # Otherwise, falls back to category_taxon for compatibility
+    # @return [Spree::Category, Spree::Taxon]
     def category
+      if self.class.reflect_on_association(:category)
+        super
+      else
+        Spree::Deprecation.warn('Spree::Product#category is deprecated and will be removed in Spree 6. Please use Spree::Product#category_taxon instead.')
+        category_taxon
+      end
+    end
+
+    # Returns the category taxon for the product
+    # @return [Spree::Taxon]
+    def category_taxon
       @category ||= if Spree.use_translations?
                       taxons.joins(:taxonomy).
                         join_translation_table(Taxonomy).
@@ -580,7 +614,7 @@ module Spree
     end
 
     def main_taxon
-      category || taxons.first
+      category_taxon || taxons.first
     end
 
     def taxons_for_store(store)

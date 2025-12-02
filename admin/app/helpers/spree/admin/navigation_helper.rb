@@ -7,15 +7,15 @@ module Spree
       # @param [String, nil] icon Optional icon name to prepend to the label
       # @param [Boolean, nil] active Whether the link should be marked as active
       # @return [SafeBuffer] The navigation item HTML
-      def nav_item(label = nil, url, icon: nil, active: nil, data: {})
+      def nav_item(label = nil, url, icon: nil, active: nil, data: {}, **options)
         content_tag :li, class: 'nav-item', role: 'presentation' do
           if block_given?
-            active_link_to url, class: 'nav-link', active: active, data: data do
+            active_link_to url, class: 'nav-link', active: active, data: data, **options do
               yield
             end
           else
             label = icon(icon) + label if icon.present? && label.present?
-            active_link_to label, url, class: 'nav-link', active: active, data: data
+            active_link_to label, url, class: 'nav-link', active: active, data: data, **options
           end
         end
       end
@@ -248,7 +248,7 @@ module Spree
         end
 
         link_to url, class: 'd-flex align-items-center text-decoration-none' do
-          content_tag(:span, icon('chevron-left', class: 'mr-0'), class: 'btn hover-gray px-2 d-flex align-items-center') +
+          content_tag(:span, icon('chevron-left', class: 'mr-0'), class: 'btn hover-gray shadow-none px-2 d-flex align-items-center shadow-none') +
             content_tag(:span, label, class: 'font-size-base text-black')
         end
       end
@@ -310,6 +310,49 @@ module Spree
           icon('settings')
         elsif @breadcrumb_icon
           icon(@breadcrumb_icon)
+        end
+      end
+
+      # Renders the navigation for the given context
+      # @param context [Symbol] the navigation context (:sidebar, :settings, etc.)
+      # @param options [Hash] additional options for rendering
+      # @return [String] the rendered navigation HTML
+      def render_navigation(context = :sidebar, **options)
+        return '' if Spree::Admin::RuntimeConfig.legacy_sidebar_navigation
+
+        items = navigation_items(context)
+        return '' if items.empty?
+
+        render 'spree/admin/shared/navigation',
+               items: items,
+               context: context,
+               **options
+      end
+
+      # Get navigation items for the given context
+      # @param context [Symbol] the navigation context
+      # @return [Array<Spree::Admin::Navigation::Item>] the visible navigation items
+      def navigation_items(context = :sidebar)
+        # Pass the view context (self) so that can? and other helpers are available
+        Spree.admin.navigation.send(context)&.visible_items(self) || []
+      end
+
+      # Renders page tab navigation for the given context
+      # @param context [Symbol] the navigation context (:tax_tabs, :shipping_tabs, etc.)
+      # @param options [Hash] additional options for rendering
+      # @return [String] the rendered tab navigation HTML wrapped in content_for(:page_tabs)
+      def render_tab_navigation(context, **options)
+        items = navigation_items(context)
+        return '' if items.empty?
+
+        content_for :page_tabs do
+          items.map do |item|
+            item_url = item.resolve_url(self)
+            item_label = item.resolve_label
+            is_active = item.active?(request.path, self)
+
+            nav_item(item_label, item_url, active: is_active)
+          end.join.html_safe
         end
       end
     end

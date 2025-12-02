@@ -6,12 +6,12 @@
   <div data-controller="tabs">
     <ul class="nav nav-pills nav-fill m-3" id="pills-tab" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="btn nav-link w-100 active" id="pills-standard" data-tabs-target="tab" data-action="click->tabs#select" type="button" role="tab" aria-controls="pills-standard" aria-selected="true">
+        <button class="nav-link w-100 active" id="pills-standard" data-tabs-target="tab" data-action="click->tabs#select" type="button" role="tab" aria-controls="pills-standard" aria-selected="true">
           Standard
         </button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="btn nav-link w-100" id="pills-custom" data-tabs-target="tab" data-action="click->tabs#select" type="button" role="tab" aria-controls="pills-custom" aria-selected="false">
+        <button class="nav-link w-100" id="pills-custom" data-tabs-target="tab" data-action="click->tabs#select" type="button" role="tab" aria-controls="pills-custom" aria-selected="false">
           Custom
         </button>
       </li>
@@ -60,7 +60,7 @@
             <div class="alert alert-warning">
               Using custom fonts can slow down your store.
             </div>
-            <%= f.spree_text_area :preferred_custom_font_code, style: 'min-height: 6em' %>
+            <%= f.spree_text_area :preferred_custom_font_code, style: 'min-height: 6em', label: Spree.t(:custom_font_code) %>
           </div>
           <%= f.submit Spree.t('actions.update'), class: 'btn btn-primary' %>
 

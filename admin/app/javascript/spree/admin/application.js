@@ -15,7 +15,6 @@ import "mapkick/bundle"
 
 // Helpers
 import 'spree/admin/helpers/tinymce'
-import 'spree/admin/helpers/canvas'
 import 'spree/admin/helpers/trix/video_embed'
 import 'spree/admin/helpers/bootstrap'
 
@@ -35,7 +34,6 @@ if (typeof Stimulus === 'undefined') {
 import AutoSubmit from '@stimulus-components/auto-submit'
 import CheckboxSelectAll from 'stimulus-checkbox-select-all'
 import Dialog from "@stimulus-components/dialog"
-import Dropdown from '@stimulus-components/dropdown'
 import TextareaAutogrow from 'stimulus-textarea-autogrow'
 import Notification from 'stimulus-notification'
 import PasswordVisibility from 'stimulus-password-visibility'
@@ -56,6 +54,7 @@ import Clipboard from 'spree/admin/controllers/clipboard_controller'
 import CodeMirrorController from 'spree/admin/controllers/codemirror_controller'
 import ColorPaletteController from 'spree/admin/controllers/color_palette_controller'
 import ColorPickerController from 'spree/admin/controllers/color_picker_controller'
+import DropdownController from 'spree/admin/controllers/dropdown_controller'
 import FiltersController from 'spree/admin/controllers/filters_controller'
 import FontPickerController from 'spree/admin/controllers/font_picker_controller'
 import HighlightController from 'spree/admin/controllers/highlight_controller'
@@ -76,6 +75,7 @@ import SearchPickerController from 'spree/admin/controllers/search_picker_contro
 import SectionFormController from 'spree/admin/controllers/section_form_controller'
 import SelectController from 'spree/admin/controllers/select_controller'
 import SeoFormController from 'spree/admin/controllers/seo_form_controller'
+import SidebarController from 'spree/admin/controllers/sidebar_controller'
 import SlugFormController from 'spree/admin/controllers/slug_form_controller'
 import StickyController from 'spree/admin/controllers/sticky_controller'
 import SortableAutoSubmit from 'spree/admin/controllers/sortable_auto_submit_controller'
@@ -114,7 +114,7 @@ application.register('color-picker', ColorPickerController)
 application.register('dialog', Dialog)
 application.register('drawer', Dialog)
 application.register('disable-submit-button', DisableSubmitButtonController)
-application.register('dropdown', Dropdown)
+application.register('dropdown', DropdownController)
 application.register('enable-button', EnableButtonController)
 application.register('export-dialog', Dialog)
 application.register('filters', FiltersController)
@@ -141,6 +141,7 @@ application.register('search-picker', SearchPickerController)
 application.register('section-form', SectionFormController)
 application.register('select', SelectController)
 application.register('seo-form', SeoFormController)
+application.register('sidebar', SidebarController)
 application.register('slug-form', SlugFormController)
 application.register('sticky', StickyController)
 application.register('sortable', Sortable)
