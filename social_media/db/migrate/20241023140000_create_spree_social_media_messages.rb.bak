@@ -1,0 +1,29 @@
+class CreateSpreeSocialMediaMessages < ActiveRecord::Migration[7.2]
+  def change
+    create_table :spree_social_media_messages do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }
+      t.string :platform_message_id, null: false
+      t.text :message_text, null: false
+      t.string :message_type, null: false
+      t.string :direction, null: false
+      t.string :status, default: 'pending'
+      t.string :sender_platform_id
+      t.string :sender_username
+      t.references :sender, polymorphic: true, null: true
+      t.references :recipient, polymorphic: true, null: true
+      t.string :customer_intent
+      t.text :auto_reply_suggestions, null: true
+      t.string :in_reply_to
+      t.datetime :read_at
+      t.datetime :responded_at
+      t.json :message_metadata
+      t.timestamps
+
+      t.index [:social_media_account_id, :platform_message_id], unique: true, name: 'idx_messages_account_platform'
+      t.index [:direction, :status]
+      t.index [:message_type, :created_at]
+      t.index [:customer_intent]
+      t.index [:read_at]
+    end
+  end
+end

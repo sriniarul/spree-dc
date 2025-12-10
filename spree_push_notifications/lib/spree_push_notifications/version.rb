@@ -1,3 +1,3 @@
 module SpreePushNotifications
-  VERSION = '1.0.0'
+  VERSION = '5.2.2'
 end

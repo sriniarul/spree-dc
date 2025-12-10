@@ -1,0 +1,258 @@
+<% content_for :page_title do %>
+  <%= @account.display_name %> - <%= @account.platform.humanize %>
+<% end %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center">
+    <%= link_to spree.admin_social_media_accounts_path, class: 'btn btn-outline-secondary me-3' do %>
+      <%= icon 'arrow-left' %>
+    <% end %>
+    <div>
+      <h1 class="h3 mb-1 d-flex align-items-center">
+        <%= icon "brand-#{@account.platform}", class: 'me-2', size: '2rem' %>
+        <%= @account.display_name %>
+      </h1>
+      <p class="text-muted mb-0">
+        <%= @account.platform.humanize %>
+        <% if @account.username.present? %>
+          • @<%= @account.username %>
+        <% end %>
+        <% if @account.profile_url.present? %>
+          • <%= link_to "View Profile", @account.profile_url, target: '_blank', class: 'text-decoration-none' %>
+        <% end %>
+      </p>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <%= link_to spree.edit_admin_social_media_account_path(@account),
+                class: 'btn btn-outline-primary' do %>
+      <%= icon 'edit' %>
+      Edit Settings
+    <% end %>
+    <%= link_to spree.test_connection_admin_social_media_account_path(@account),
+                method: :post, class: 'btn btn-outline-success' do %>
+      <%= icon 'refresh' %>
+      Test Connection
+    <% end %>
+    <%= link_to spree.admin_social_media_account_path(@account),
+                method: :delete,
+                class: 'btn btn-outline-danger',
+                data: {
+                  turbo_method: :delete,
+                  turbo_confirm: "Are you sure you want to disconnect this #{@account.platform.humanize} account? This will remove all associated posts and analytics data."
+                } do %>
+      <%= icon 'unlink' %>
+      Disconnect Account
+    <% end %>
+  </div>
+</div>
+
+<!-- Account Status and Stats -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="mb-2">
+          <span class="badge badge-<%= @account.status == 'active' ? 'success' : @account.status == 'error' ? 'danger' : 'warning' %> fs-6">
+            <%= @account.status.humanize %>
+          </span>
+        </div>
+        <div class="small text-muted">Account Status</div>
+        <% if @account.last_error.present? %>
+          <div class="small text-danger mt-1">
+            <%= @account.last_error %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="h4 mb-1"><%= @account.total_followers %></div>
+        <div class="small text-muted">Total Followers</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="h4 mb-1"><%= @account.social_media_posts.count %></div>
+        <div class="small text-muted">Total Posts</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="h4 mb-1"><%= @account.engagement_rate %>%</div>
+        <div class="small text-muted">Engagement Rate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Posts -->
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Recent Posts</h5>
+        <%= link_to spree.admin_products_path,
+                    class: 'btn btn-sm btn-outline-primary' do %>
+          <%= icon 'box', size: '1rem' %>
+          Post Products
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @recent_posts.any? %>
+          <div class="list-group list-group-flush">
+            <% @recent_posts.each do |post| %>
+              <div class="list-group-item px-0">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="flex-grow-1">
+                    <div class="fw-medium mb-1">
+                      <%= truncate(post.content, length: 100) %>
+                    </div>
+                    <div class="small text-muted">
+                      <span class="badge badge-<%= post.status == 'posted' ? 'success' : post.status == 'failed' ? 'danger' : 'warning' %>">
+                        <%= post.status.humanize %>
+                      </span>
+                      • <%= time_ago_in_words(post.created_at) %> ago
+                      <% if post.product.present? %>
+                        • <%= link_to post.product.name, spree.admin_product_path(post.product), class: 'text-decoration-none' %>
+                      <% end %>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <% if post.product.present? %>
+                      <%= link_to spree.admin_product_path(post.product),
+                                  class: 'btn btn-sm btn-outline-primary' do %>
+                        <%= icon 'box', size: '1rem' %>
+                        View Product
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <div class="text-muted">
+              <%= icon 'photo', size: '3rem', class: 'mb-2' %>
+              <p>No posts yet for this account</p>
+              <%= link_to spree.admin_products_path,
+                          class: 'btn btn-primary' do %>
+                <%= icon 'box' %>
+                Post a Product
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <!-- Analytics -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Analytics</h5>
+        <%= link_to spree.sync_analytics_admin_social_media_account_path(@account),
+                    method: :post, class: 'btn btn-sm btn-outline-success' do %>
+          <%= icon 'refresh', size: '1rem' %>
+          Sync
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @analytics.any? %>
+          <% latest = @analytics.first %>
+          <div class="row text-center mb-3">
+            <div class="col-6">
+              <div class="h6 mb-0"><%= number_with_delimiter(latest.impressions) %></div>
+              <small class="text-muted">Impressions</small>
+            </div>
+            <div class="col-6">
+              <div class="h6 mb-0"><%= number_with_delimiter(latest.total_engagement) %></div>
+              <small class="text-muted">Engagement</small>
+            </div>
+          </div>
+          <div class="row text-center">
+            <div class="col-4">
+              <div class="small mb-0"><%= number_with_delimiter(latest.likes) %></div>
+              <small class="text-muted">Likes</small>
+            </div>
+            <div class="col-4">
+              <div class="small mb-0"><%= number_with_delimiter(latest.comments) %></div>
+              <small class="text-muted">Comments</small>
+            </div>
+            <div class="col-4">
+              <div class="small mb-0"><%= number_with_delimiter(latest.shares) %></div>
+              <small class="text-muted">Shares</small>
+            </div>
+          </div>
+          <hr>
+          <div class="small text-muted">
+            Last updated: <%= latest.date.strftime('%B %d, %Y') %>
+          </div>
+        <% else %>
+          <div class="text-center text-muted">
+            <%= icon 'chart-bar', size: '2rem', class: 'mb-2' %>
+            <p class="small">No analytics data available</p>
+            <% if @account.active? %>
+              <%= link_to spree.sync_analytics_admin_social_media_account_path(@account),
+                          method: :post, class: 'btn btn-sm btn-primary' do %>
+                Sync Now
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Account Info -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Account Information</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="small text-muted">Platform ID</div>
+          <div class="font-monospace small"><%= @account.platform_user_id %></div>
+        </div>
+        <% if @account.respond_to?(:email) && @account.email.present? %>
+          <div class="mb-3">
+            <div class="small text-muted">Email</div>
+            <div><%= @account.email %></div>
+          </div>
+        <% end %>
+        <% if @account.phone_number.present? %>
+          <div class="mb-3">
+            <div class="small text-muted">Phone</div>
+            <div><%= @account.phone_number %></div>
+          </div>
+        <% end %>
+        <div class="mb-3">
+          <div class="small text-muted">Connected</div>
+          <div><%= @account.created_at.strftime('%B %d, %Y at %I:%M %p') %></div>
+        </div>
+        <% if @account.access_token.present? %>
+          <div class="mb-3">
+            <div class="small text-muted">Token Status</div>
+            <div>
+              <% if @account.access_token_valid? %>
+                <span class="text-success">Valid</span>
+                <% if @account.expires_at.present? %>
+                  (expires <%= distance_of_time_in_words(Time.current, @account.expires_at) %>)
+                <% end %>
+              <% else %>
+                <span class="text-danger">Expired</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

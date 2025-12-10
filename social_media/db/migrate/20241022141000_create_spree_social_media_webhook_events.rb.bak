@@ -1,0 +1,32 @@
+class CreateSpreeSocialMediaWebhookEvents < ActiveRecord::Migration[7.0]
+  def change
+    create_table :spree_social_media_webhook_events do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }, index: { name: 'idx_webhook_events_on_account_id' }
+
+      t.string :event_type, null: false
+      t.string :field_name
+      t.string :priority_level, default: 'low'
+
+      t.text :event_data
+      t.text :processing_result
+      t.text :last_error
+
+      t.boolean :processed, default: false
+      t.datetime :processed_at
+      t.integer :processing_attempts, default: 0
+      t.datetime :last_attempted_at
+
+      t.datetime :occurred_at, null: false
+      t.timestamps
+    end
+
+    add_index :spree_social_media_webhook_events, :event_type
+    add_index :spree_social_media_webhook_events, :priority_level
+    add_index :spree_social_media_webhook_events, :processed
+    add_index :spree_social_media_webhook_events, :occurred_at
+    add_index :spree_social_media_webhook_events, [:processed, :processing_attempts],
+              name: 'idx_webhook_events_retry_candidates'
+    add_index :spree_social_media_webhook_events, [:social_media_account_id, :occurred_at],
+              name: 'idx_webhook_events_account_timeline'
+  end
+end

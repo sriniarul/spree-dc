@@ -1,0 +1,557 @@
+<% content_for :page_title do %>
+  Social Media Scheduling Dashboard
+<% end %>
+
+<div class="row">
+  <!-- Scheduling Calendar -->
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+          <%= icon 'calendar', class: 'me-2' %>
+          Posting Schedule
+        </h5>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-outline-primary" data-period="week">Week</button>
+          <button class="btn btn-sm btn-primary" data-period="month">Month</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="schedule-calendar" class="calendar-container">
+          <!-- Calendar will be rendered here via JavaScript -->
+          <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+            <p class="text-muted mt-2">Loading schedule...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scheduled Posts List -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <%= icon 'clock', class: 'me-2' %>
+          Upcoming Scheduled Posts
+        </h5>
+      </div>
+      <div class="card-body">
+        <% if @scheduled_posts.any? %>
+          <div class="list-group list-group-flush">
+            <% @scheduled_posts.each do |post| %>
+              <div class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center mb-2">
+                    <%= icon "brand-#{post.social_media_account.platform}", class: 'me-2 text-primary' %>
+                    <strong>@<%= post.social_media_account.username %></strong>
+                    <span class="badge bg-info ms-2"><%= post.content_type.humanize %></span>
+                  </div>
+
+                  <div class="post-preview mb-2">
+                    <p class="mb-1 text-truncate" style="max-width: 500px;">
+                      <%= truncate(post.caption, length: 100) %>
+                    </p>
+                    <% if post.hashtags.present? %>
+                      <small class="text-primary"><%= post.hashtags %></small>
+                    <% end %>
+                  </div>
+
+                  <div class="d-flex align-items-center text-muted small">
+                    <%= icon 'calendar', size: '1rem', class: 'me-1' %>
+                    <span class="me-3">
+                      <%= post.scheduled_at.strftime('%B %d, %Y at %I:%M %p') %>
+                    </span>
+                    <% time_until = time_ago_in_words(post.scheduled_at) %>
+                    <%= icon 'clock', size: '1rem', class: 'me-1' %>
+                    <span>in <%= time_until %></span>
+                  </div>
+                </div>
+
+                <div class="dropdown ms-3">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                          data-bs-toggle="dropdown">
+                    <%= icon 'dots-vertical', size: '1rem' %>
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <button class="dropdown-item" data-action="edit-schedule"
+                              data-post-id="<%= post.id %>">
+                        <%= icon 'edit', size: '1rem', class: 'me-2' %>
+                        Edit Schedule
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item" data-action="publish-now"
+                              data-post-id="<%= post.id %>">
+                        <%= icon 'play', size: '1rem', class: 'me-2' %>
+                        Publish Now
+                      </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <button class="dropdown-item text-danger" data-action="cancel-schedule"
+                              data-post-id="<%= post.id %>">
+                        <%= icon 'x', size: '1rem', class: 'me-2' %>
+                        Cancel Schedule
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <%= icon 'calendar-x', size: '3rem', class: 'text-muted' %>
+            <h6 class="text-muted mt-3">No scheduled posts</h6>
+            <p class="text-muted mb-3">Create and schedule posts to see them here.</p>
+            <%= link_to spree.new_post_admin_social_media_content_index_path,
+                        class: 'btn btn-primary' do %>
+              <%= icon 'plus', class: 'me-2' %>
+              Schedule New Post
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scheduling Tools Sidebar -->
+  <div class="col-md-4">
+    <!-- Optimal Times Widget -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="card-title mb-0">
+          <%= icon 'target', class: 'me-2' %>
+          Optimal Posting Times
+        </h6>
+      </div>
+      <div class="card-body">
+        <% if @scheduling_suggestions.any? %>
+          <div class="list-group list-group-flush">
+            <% @scheduling_suggestions.first(5).each do |suggestion| %>
+              <div class="list-group-item px-0 py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="fw-medium">
+                      <%= suggestion[:day_name] %>
+                    </div>
+                    <small class="text-muted">
+                      <%= suggestion[:time_display] %>
+                    </small>
+                  </div>
+                  <div class="text-end">
+                    <div class="badge bg-<%= suggestion[:recommended] ? 'success' : 'info' %>">
+                      <%= suggestion[:engagement_score] %>%
+                    </div>
+                    <% if suggestion[:recommended] %>
+                      <div class="small text-success">
+                        <i class="fas fa-star"></i> Recommended
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mt-3">
+            <button class="btn btn-sm btn-outline-primary w-100"
+                    data-action="schedule-optimal">
+              <i class="fas fa-magic me-2"></i>
+              Auto-Schedule at Optimal Times
+            </button>
+          </div>
+        <% else %>
+          <p class="text-muted small">
+            Connect social media accounts to see optimal posting times.
+          </p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Quick Schedule Actions -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="card-title mb-0">
+          <%= icon 'zap', class: 'me-2' %>
+          Quick Actions
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to spree.new_post_admin_social_media_content_index_path,
+                      class: 'btn btn-primary btn-sm' do %>
+            <%= icon 'plus', class: 'me-2' %>
+            Create New Post
+          <% end %>
+
+          <button class="btn btn-outline-info btn-sm" data-action="bulk-schedule">
+            <%= icon 'layers', class: 'me-2' %>
+            Bulk Schedule Posts
+          </button>
+
+          <button class="btn btn-outline-success btn-sm" data-action="auto-pilot">
+            <%= icon 'repeat', class: 'me-2' %>
+            Enable Auto-Pilot
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule Analytics -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="card-title mb-0">
+          <%= icon 'trending-up', class: 'me-2' %>
+          This Week's Stats
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-6">
+            <div class="h4 mb-0 text-primary"><%= @week_stats[:scheduled] %></div>
+            <small class="text-muted">Scheduled</small>
+          </div>
+          <div class="col-6">
+            <div class="h4 mb-0 text-success"><%= @week_stats[:published] %></div>
+            <small class="text-muted">Published</small>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="row text-center">
+          <div class="col-12">
+            <div class="h5 mb-0 text-info"><%= @week_stats[:optimal_percentage] %>%</div>
+            <small class="text-muted">Posted at optimal times</small>
+          </div>
+        </div>
+
+        <% if @schedule_conflicts.any? %>
+          <div class="alert alert-warning mt-3 py-2">
+            <small>
+              <i class="fas fa-exclamation-triangle me-1"></i>
+              <%= @schedule_conflicts.size %> scheduling conflicts detected.
+            </small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Platform Status -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="card-title mb-0">
+          <%= icon 'activity', class: 'me-2' %>
+          Platform Status
+        </h6>
+      </div>
+      <div class="card-body">
+        <% @vendor.social_media_accounts.active.each do |account| %>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center">
+              <%= icon "brand-#{account.platform}", class: 'me-2 text-primary' %>
+              <span class="small">@<%= account.username %></span>
+            </div>
+            <div>
+              <span class="badge bg-<%= account.status == 'active' ? 'success' : 'warning' %>">
+                <%= account.status %>
+              </span>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @vendor.social_media_accounts.active.empty? %>
+          <p class="text-muted small">
+            No active accounts.
+            <%= link_to "Connect accounts", spree.admin_social_media_accounts_path %>
+            to start scheduling.
+          </p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<!-- Edit Schedule Modal -->
+<div class="modal fade" id="editScheduleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reschedule Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="rescheduleForm">
+          <input type="hidden" id="reschedulePostId">
+
+          <div class="mb-3">
+            <label for="newScheduleDateTime" class="form-label">New Schedule Time</label>
+            <input type="datetime-local" class="form-control" id="newScheduleDateTime" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Suggested Times</label>
+            <div id="suggestedTimes" class="list-group">
+              <!-- Will be populated via JavaScript -->
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveReschedule()">
+          Save New Schedule
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Schedule Modal -->
+<div class="modal fade" id="bulkScheduleModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Schedule Posts</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="bulkScheduleForm">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="bulkStrategy" class="form-label">Scheduling Strategy</label>
+                <select class="form-select" id="bulkStrategy">
+                  <option value="optimal">Optimal Times</option>
+                  <option value="spread">Spread Evenly</option>
+                  <option value="immediate">Immediate (5min intervals)</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="bulkStartDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="bulkStartDate">
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Select Draft Posts to Schedule</label>
+            <div id="draftPostsList" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+              <!-- Will be populated via JavaScript -->
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="executeBulkSchedule()">
+          Schedule Selected Posts
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  initializeScheduleDashboard();
+});
+
+function initializeScheduleDashboard() {
+  // Initialize calendar view
+  loadScheduleCalendar();
+
+  // Bind action handlers
+  bindActionHandlers();
+
+  // Load suggested times
+  loadOptimalTimes();
+
+  // Set up real-time updates
+  if (window.ActionCable) {
+    setupRealtimeUpdates();
+  }
+}
+
+function loadScheduleCalendar() {
+  // This would integrate with a calendar library like FullCalendar
+  // For now, we'll show a loading state
+  console.log('Loading schedule calendar...');
+}
+
+function bindActionHandlers() {
+  // Edit schedule
+  document.querySelectorAll('[data-action="edit-schedule"]').forEach(button => {
+    button.addEventListener('click', function() {
+      const postId = this.dataset.postId;
+      openEditScheduleModal(postId);
+    });
+  });
+
+  // Publish now
+  document.querySelectorAll('[data-action="publish-now"]').forEach(button => {
+    button.addEventListener('click', function() {
+      const postId = this.dataset.postId;
+      publishPostNow(postId);
+    });
+  });
+
+  // Cancel schedule
+  document.querySelectorAll('[data-action="cancel-schedule"]').forEach(button => {
+    button.addEventListener('click', function() {
+      const postId = this.dataset.postId;
+      cancelSchedule(postId);
+    });
+  });
+
+  // Bulk schedule
+  document.querySelector('[data-action="bulk-schedule"]')?.addEventListener('click', function() {
+    openBulkScheduleModal();
+  });
+
+  // Auto-schedule optimal
+  document.querySelector('[data-action="schedule-optimal"]')?.addEventListener('click', function() {
+    scheduleAtOptimalTimes();
+  });
+}
+
+function openEditScheduleModal(postId) {
+  document.getElementById('reschedulePostId').value = postId;
+
+  // Load current schedule and suggestions
+  loadScheduleSuggestions(postId);
+
+  const modal = new bootstrap.Modal(document.getElementById('editScheduleModal'));
+  modal.show();
+}
+
+function saveReschedule() {
+  const postId = document.getElementById('reschedulePostId').value;
+  const newDateTime = document.getElementById('newScheduleDateTime').value;
+
+  if (!newDateTime) {
+    alert('Please select a new schedule time');
+    return;
+  }
+
+  // Make API call to reschedule
+  fetch(`/admin/social_media/content/${postId}/reschedule`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+      new_time: newDateTime
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Failed to reschedule: ' + data.error);
+    }
+  });
+}
+
+function publishPostNow(postId) {
+  if (confirm('Are you sure you want to publish this post immediately?')) {
+    fetch(`/admin/social_media/content/${postId}/publish_post`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Failed to publish: ' + data.error);
+      }
+    });
+  }
+}
+
+function cancelSchedule(postId) {
+  if (confirm('Are you sure you want to cancel this scheduled post?')) {
+    fetch(`/admin/social_media/content/${postId}/cancel_schedule`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Failed to cancel schedule: ' + data.error);
+      }
+    });
+  }
+}
+
+function loadOptimalTimes() {
+  // This would make an API call to get optimal times for connected platforms
+  console.log('Loading optimal times...');
+}
+
+function setupRealtimeUpdates() {
+  // Set up ActionCable subscription for real-time updates
+  const subscription = App.cable.subscriptions.create("ScheduleChannel", {
+    received(data) {
+      // Update UI when posts are published or scheduling changes
+      if (data.type === 'post_published' || data.type === 'schedule_updated') {
+        location.reload();
+      }
+    }
+  });
+}
+</script>
+
+<style>
+.calendar-container {
+  min-height: 400px;
+}
+
+.list-group-item {
+  border-left: none;
+  border-right: none;
+}
+
+.list-group-item:first-child {
+  border-top: none;
+}
+
+.list-group-item:last-child {
+  border-bottom: none;
+}
+
+.post-preview {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.badge {
+  font-size: 0.7rem;
+}
+
+@media (max-width: 768px) {
+  .card-body .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .dropdown.ms-3 {
+    margin-left: 0 !important;
+    margin-top: 1rem;
+  }
+}
+</style>

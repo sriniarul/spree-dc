@@ -1,0 +1,183 @@
+<!-- Image Gallery Modal for Social Media Posting -->
+<div class="modal fade" id="imageGalleryModal" tabindex="-1" aria-labelledby="imageGalleryModalLabel" aria-hidden="true" data-controller="image-gallery">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="imageGalleryModalLabel">Select Images to Post</h5>
+          <p class="text-muted mb-0 small" data-image-gallery-target="productInfo"></p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Instructions -->
+        <div class="alert alert-info mb-3">
+          <div class="d-flex align-items-start">
+            <i class="fa fa-info-circle me-2 mt-1"></i>
+            <div class="small">
+              <strong>Instructions:</strong>
+              <ul class="mb-0 ps-3">
+                <li>Check images you want to include in your post</li>
+                <li>Drag and drop to reorder selected images</li>
+                <li>Add additional images if needed</li>
+                <li>First selected image will be the main image</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection Summary -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <span class="badge bg-primary" data-image-gallery-target="selectionCount">0 images selected</span>
+            <span class="text-muted small ms-2">(Select up to 10 images for carousel)</span>
+          </div>
+          <div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->image-gallery#selectAll">
+              <i class="fa fa-check-square"></i> Select All
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-action="click->image-gallery#deselectAll">
+              <i class="fa fa-square"></i> Deselect All
+            </button>
+          </div>
+        </div>
+
+        <!-- Product Images Gallery -->
+        <div class="mb-4">
+          <h6 class="mb-3">Product Images</h6>
+          <div class="row g-3" data-image-gallery-target="gallery" id="sortable-gallery">
+            <!-- Images will be dynamically loaded here -->
+          </div>
+        </div>
+
+        <!-- Add Additional Images -->
+        <div class="mb-3">
+          <h6 class="mb-3">Add Additional Images</h6>
+          <div class="border rounded p-4 text-center" style="border-style: dashed !important;">
+            <input type="file"
+                   class="d-none"
+                   id="additionalImagesInput"
+                   accept="image/*"
+                   multiple
+                   data-action="change->image-gallery#handleAdditionalImages">
+            <label for="additionalImagesInput" class="btn btn-outline-primary mb-2" style="cursor: pointer;">
+              <i class="fa fa-upload"></i> Upload Additional Images
+            </label>
+            <p class="text-muted small mb-0">Click to upload or drag and drop</p>
+            <p class="text-muted small mb-0">Supported formats: JPG, PNG (Max 8MB per image)</p>
+          </div>
+
+          <!-- Additional Images Preview -->
+          <div class="row g-3 mt-2" data-image-gallery-target="additionalGallery" id="additional-images-gallery">
+            <!-- Additional uploaded images will appear here -->
+          </div>
+        </div>
+
+        <!-- Selected Images Preview (Ordered) -->
+        <div data-image-gallery-target="selectedPreview" style="display: none;">
+          <h6 class="mb-3 border-top pt-3">Selected Images (In Order)</h6>
+          <div class="alert alert-success small">
+            <i class="fa fa-check-circle me-1"></i>
+            Images will be posted in the order shown below. Drag to reorder.
+          </div>
+          <div class="row g-3" data-image-gallery-target="selectedGallery" id="selected-images-gallery">
+            <!-- Selected images in order will appear here -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button"
+                class="btn btn-primary"
+                data-action="click->image-gallery#proceedToPost"
+                data-image-gallery-target="proceedButton"
+                disabled>
+          <i class="fa fa-arrow-right"></i> Continue to Post
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.image-gallery-item {
+  position: relative;
+  cursor: move;
+  transition: all 0.2s ease;
+}
+
+.image-gallery-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.image-gallery-item.selected {
+  border: 3px solid #0d6efd !important;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+
+.image-gallery-item.dragging {
+  opacity: 0.5;
+}
+
+.image-gallery-item .selection-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.image-gallery-item .selection-order {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  background: #0d6efd;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.image-gallery-item.selected .selection-order {
+  display: flex;
+}
+
+.image-gallery-item .remove-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  background: #dc3545;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.image-gallery-item .remove-icon:hover {
+  background: #bb2d3b;
+}
+
+.image-gallery-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+</style>

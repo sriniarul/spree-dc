@@ -103,7 +103,7 @@ en:
         non_profit_organization: "Non-Profit Organization"
         other: "Other"
 
-    # Model Validations and Errors
+    # Model Validations and Errors (kept under spree for reference, but also added at root level)
     activerecord:
       models:
         spree/vendor: "Vendor"
@@ -141,7 +141,45 @@ en:
               base:
                 incomplete_registration: "Business registration must be complete before approval"
 
-    # Admin Interface
+  # ActiveRecord translations at root level (required for form labels)
+  activerecord:
+    models:
+      spree/vendor: "Vendor"
+    attributes:
+      spree/vendor:
+        name: "Business Name"
+        legal_name: "Legal Name"
+        business_type: "Business Type"
+        trade_name: "Trade Name / DBA"
+        registration_number: "Registration Number"
+        incorporation_date: "Incorporation Date"
+        country_code: "Country"
+        state_province: "State / Province"
+        city: "City"
+        postal_code: "Postal Code"
+        address_line1: "Address Line 1"
+        address_line2: "Address Line 2"
+        phone_number: "Phone Number"
+        website_url: "Website URL"
+        state: "Status"
+        user_id: "User Account"
+    errors:
+      models:
+        spree/vendor:
+          attributes:
+            incorporation_date:
+              in_future: "cannot be in the future"
+            registration_number:
+              taken_in_country: "is already registered in this country"
+              invalid_format: "must contain only letters, numbers, hyphens, periods, slashes, and spaces"
+            phone_number:
+              invalid: "must be a valid phone number format"
+            website_url:
+              invalid: "must be a valid URL starting with http:// or https://"
+            base:
+              incomplete_registration: "Business registration must be complete before approval"
+
+    # Admin Interface (moved under spree namespace)
     admin:
       vendors:
         index:

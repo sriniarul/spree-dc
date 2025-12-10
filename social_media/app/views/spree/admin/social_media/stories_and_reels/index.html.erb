@@ -1,0 +1,709 @@
+<% content_for :page_title do %>
+  <%= Spree.t(:stories_and_reels) %>
+<% end %>
+
+<div class="stories-reels-dashboard">
+  <!-- Header with actions -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-video text-primary me-2"></i>
+        <%= Spree.t(:stories_and_reels) %>
+      </h5>
+
+      <div class="d-flex align-items-center">
+        <%= form_with url: request.path, method: :get, local: true, html: { class: 'me-3' } do |f| %>
+          <%= f.select :account_id,
+                      options_from_collection_for_select(@instagram_accounts, :id, :display_name, @current_account&.id),
+                      { prompt: 'Select Instagram Account' },
+                      { class: 'form-select', onchange: 'this.form.submit();' } %>
+        <% end %>
+
+        <div class="btn-group">
+          <%= link_to new_story_admin_social_media_stories_and_reels_path, class: 'btn btn-success' do %>
+            <i class="fas fa-plus-circle me-1"></i>
+            New Story
+          <% end %>
+          <%= link_to new_reel_admin_social_media_stories_and_reels_path, class: 'btn btn-primary' do %>
+            <i class="fas fa-film me-1"></i>
+            New Reel
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if @current_account.nil? %>
+    <div class="alert alert-info text-center">
+      <i class="fas fa-info-circle me-2"></i>
+      Please connect an Instagram account to create stories and reels.
+      <%= link_to "Connect Instagram", spree.new_admin_social_media_instagram_setup_path, class: 'btn btn-primary ms-2' %>
+    </div>
+  <% else %>
+    <!-- Analytics Summary Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-history fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">Stories</h6>
+                <h3 class="mb-0"><%= @analytics_summary[:stories_count] %></h3>
+                <small class="text-light">+<%= @analytics_summary[:this_week][:stories] %> this week</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-film fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">Reels</h6>
+                <h3 class="mb-0"><%= @analytics_summary[:reels_count] %></h3>
+                <small class="text-light">+<%= @analytics_summary[:this_week][:reels] %> this week</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card bg-info text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-chart-line fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">Total Content</h6>
+                <h3 class="mb-0"><%= @analytics_summary[:total_content] %></h3>
+                <small class="text-light">Stories + Reels</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card bg-warning text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-fire fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">This Week</h6>
+                <h3 class="mb-0"><%= @analytics_summary[:this_week][:stories] + @analytics_summary[:this_week][:reels] %></h3>
+                <small class="text-light">New content</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Tabs -->
+    <div class="card">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="contentTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="stories-tab" data-bs-toggle="tab" data-bs-target="#stories" type="button" role="tab">
+              <i class="fas fa-history me-1"></i>
+              Recent Stories
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reels-tab" data-bs-toggle="tab" data-bs-target="#reels" type="button" role="tab">
+              <i class="fas fa-film me-1"></i>
+              Recent Reels
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">
+              <i class="fas fa-chart-bar me-1"></i>
+              Analytics
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tips-tab" data-bs-toggle="tab" data-bs-target="#tips" type="button" role="tab">
+              <i class="fas fa-lightbulb me-1"></i>
+              Performance Tips
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-body">
+        <div class="tab-content" id="contentTabsContent">
+          <!-- Stories Tab -->
+          <div class="tab-pane fade show active" id="stories" role="tabpanel">
+            <% if @stories.any? %>
+              <div class="row">
+                <% @stories.each do |story| %>
+                  <div class="col-md-4 col-lg-3 mb-4">
+                    <div class="card story-card h-100">
+                      <div class="story-preview position-relative" style="height: 200px; overflow: hidden; border-radius: 8px;">
+                        <% if story.media_attachments.attached? %>
+                          <% first_media = story.media_attachments.first %>
+                          <% if first_media.image? %>
+                            <%= image_tag first_media, class: 'card-img-top', style: 'height: 200px; object-fit: cover;' %>
+                          <% elsif first_media.video? %>
+                            <video class="card-img-top" style="height: 200px; object-fit: cover;" muted>
+                              <source src="<%= url_for(first_media) %>" type="<%= first_media.content_type %>">
+                            </video>
+                            <div class="position-absolute top-0 start-0 m-2">
+                              <span class="badge bg-dark">
+                                <i class="fas fa-play me-1"></i>Video
+                              </span>
+                            </div>
+                          <% end %>
+                        <% else %>
+                          <div class="d-flex align-items-center justify-content-center bg-light h-100">
+                            <i class="fas fa-history fa-3x text-muted"></i>
+                          </div>
+                        <% end %>
+
+                        <!-- Story overlay text preview -->
+                        <% if story.caption.present? %>
+                          <div class="position-absolute bottom-0 start-0 end-0 p-2 bg-dark bg-opacity-75 text-white">
+                            <small><%= truncate(story.caption, length: 50) %></small>
+                          </div>
+                        <% end %>
+
+                        <!-- Story indicators -->
+                        <div class="position-absolute top-0 end-0 m-2">
+                          <% story_metadata = JSON.parse(story.metadata || '{}') %>
+                          <% if story_metadata['stickers']&.any? %>
+                            <span class="badge bg-success">
+                              <i class="fas fa-star me-1"></i>Interactive
+                            </span>
+                          <% end %>
+                        </div>
+                      </div>
+
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <div>
+                            <small class="text-muted">
+                              <%= time_ago_in_words(story.published_at || story.created_at) %> ago
+                            </small>
+                          </div>
+                          <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                              <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                              <a class="dropdown-item" href="#" onclick="previewStory(<%= story.id %>)">
+                                <i class="fas fa-eye me-2"></i>Preview
+                              </a>
+                              <a class="dropdown-item" href="#" onclick="viewAnalytics(<%= story.id %>)">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
+                              </a>
+                              <div class="dropdown-divider"></div>
+                              <%= link_to admin_social_media_stories_and_reels_path(story), method: :delete,
+                                         class: 'dropdown-item text-danger',
+                                         confirm: 'Delete this story?',
+                                         disable_with: 'Deleting...' do %>
+                                <i class="fas fa-trash me-2"></i>Delete
+                              <% end %>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Story stats -->
+                        <% if story.social_media_analytics.any? %>
+                          <% analytics = story.social_media_analytics.first %>
+                          <div class="row text-center small">
+                            <div class="col">
+                              <div class="text-muted">Reach</div>
+                              <div class="fw-bold"><%= number_with_delimiter(analytics.reach || 0) %></div>
+                            </div>
+                            <div class="col">
+                              <div class="text-muted">Exits</div>
+                              <div class="fw-bold"><%= number_with_delimiter(analytics.story_exits || 0) %></div>
+                            </div>
+                            <div class="col">
+                              <div class="text-muted">Replies</div>
+                              <div class="fw-bold"><%= number_with_delimiter(analytics.story_replies || 0) %></div>
+                            </div>
+                          </div>
+                        <% else %>
+                          <div class="text-center text-muted small">
+                            Analytics not yet available
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="fas fa-history fa-5x text-muted mb-4"></i>
+                <h4>No Stories Yet</h4>
+                <p class="text-muted mb-4">Create your first Instagram Story to engage with your audience in real-time.</p>
+                <%= link_to new_story_admin_social_media_stories_and_reels_path, class: 'btn btn-primary' do %>
+                  <i class="fas fa-plus me-1"></i>Create Your First Story
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Reels Tab -->
+          <div class="tab-pane fade" id="reels" role="tabpanel">
+            <% if @reels.any? %>
+              <div class="row">
+                <% @reels.each do |reel| %>
+                  <div class="col-md-4 col-lg-3 mb-4">
+                    <div class="card reel-card h-100">
+                      <div class="reel-preview position-relative" style="height: 250px; overflow: hidden; border-radius: 8px;">
+                        <% if reel.media_attachments.attached? %>
+                          <% video = reel.media_attachments.first %>
+                          <video class="card-img-top" style="height: 250px; object-fit: cover;" muted poster="<%= url_for(video) if video.previewable? %>">
+                            <source src="<%= url_for(video) %>" type="<%= video.content_type %>">
+                          </video>
+                          <div class="position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-light btn-lg rounded-circle play-btn" onclick="toggleVideo(this)">
+                              <i class="fas fa-play"></i>
+                            </button>
+                          </div>
+                        <% else %>
+                          <div class="d-flex align-items-center justify-content-center bg-light h-100">
+                            <i class="fas fa-film fa-3x text-muted"></i>
+                          </div>
+                        <% end %>
+
+                        <!-- Reel length indicator -->
+                        <div class="position-absolute top-0 start-0 m-2">
+                          <span class="badge bg-dark">
+                            <i class="fas fa-clock me-1"></i>
+                            <% reel_metadata = JSON.parse(reel.metadata || '{}') %>
+                            <%= reel_metadata['reel_length'] || '?' %>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <div>
+                            <small class="text-muted">
+                              <%= time_ago_in_words(reel.published_at || reel.created_at) %> ago
+                            </small>
+                          </div>
+                          <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                              <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                              <a class="dropdown-item" href="#" onclick="previewReel(<%= reel.id %>)">
+                                <i class="fas fa-eye me-2"></i>Preview
+                              </a>
+                              <a class="dropdown-item" href="#" onclick="viewAnalytics(<%= reel.id %>)">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
+                              </a>
+                              <div class="dropdown-divider"></div>
+                              <%= link_to admin_social_media_stories_and_reels_path(reel), method: :delete,
+                                         class: 'dropdown-item text-danger',
+                                         confirm: 'Delete this reel?',
+                                         disable_with: 'Deleting...' do %>
+                                <i class="fas fa-trash me-2"></i>Delete
+                              <% end %>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Caption preview -->
+                        <% if reel.caption.present? %>
+                          <p class="card-text small">
+                            <%= truncate(reel.caption, length: 80) %>
+                          </p>
+                        <% end %>
+
+                        <!-- Reel stats -->
+                        <% if reel.social_media_analytics.any? %>
+                          <% analytics = reel.social_media_analytics.first %>
+                          <div class="row text-center small">
+                            <div class="col">
+                              <div class="text-muted">Plays</div>
+                              <div class="fw-bold"><%= number_with_delimiter(analytics.video_views || 0) %></div>
+                            </div>
+                            <div class="col">
+                              <div class="text-muted">Likes</div>
+                              <div class="fw-bold"><%= number_with_delimiter(analytics.likes || 0) %></div>
+                            </div>
+                            <div class="col">
+                              <div class="text-muted">Shares</div>
+                              <div class="fw-bold"><%= number_with_delimiter(analytics.shares || 0) %></div>
+                            </div>
+                          </div>
+                        <% else %>
+                          <div class="text-center text-muted small">
+                            Analytics not yet available
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="fas fa-film fa-5x text-muted mb-4"></i>
+                <h4>No Reels Yet</h4>
+                <p class="text-muted mb-4">Create your first Instagram Reel to showcase your products and reach a wider audience.</p>
+                <%= link_to new_reel_admin_social_media_stories_and_reels_path, class: 'btn btn-primary' do %>
+                  <i class="fas fa-plus me-1"></i>Create Your First Reel
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Analytics Tab -->
+          <div class="tab-pane fade" id="analytics" role="tabpanel">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="card-title mb-0">Stories vs Reels Performance</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="card-title mb-0">Content Creation Trend</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="trendChart" width="400" height="200"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-4">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="card-title mb-0">Detailed Analytics</h6>
+                    <div class="btn-group btn-group-sm">
+                      <%= link_to export_analytics_admin_social_media_stories_and_reels_path(format: 'csv'), class: 'btn btn-outline-primary' do %>
+                        <i class="fas fa-download me-1"></i>CSV
+                      <% end %>
+                      <%= link_to export_analytics_admin_social_media_stories_and_reels_path(format: 'json'), class: 'btn btn-outline-primary' do %>
+                        <i class="fas fa-download me-1"></i>JSON
+                      <% end %>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>Metric</th>
+                            <th>Stories</th>
+                            <th>Reels</th>
+                            <th>Comparison</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Total Count</td>
+                            <td><%= @analytics_summary[:stories_count] %></td>
+                            <td><%= @analytics_summary[:reels_count] %></td>
+                            <td>
+                              <% if @analytics_summary[:stories_count] > @analytics_summary[:reels_count] %>
+                                <span class="badge bg-primary">Stories lead</span>
+                              <% elsif @analytics_summary[:reels_count] > @analytics_summary[:stories_count] %>
+                                <span class="badge bg-success">Reels lead</span>
+                              <% else %>
+                                <span class="badge bg-secondary">Equal</span>
+                              <% end %>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>This Week</td>
+                            <td><%= @analytics_summary[:this_week][:stories] %></td>
+                            <td><%= @analytics_summary[:this_week][:reels] %></td>
+                            <td>
+                              <% weekly_total = @analytics_summary[:this_week][:stories] + @analytics_summary[:this_week][:reels] %>
+                              <span class="text-muted"><%= weekly_total %> total</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Tips Tab -->
+          <div class="tab-pane fade" id="tips" role="tabpanel">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="card-title mb-0">
+                      <i class="fas fa-history text-primary me-2"></i>
+                      Instagram Stories Best Practices
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-unstyled">
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Use Interactive Elements:</strong> Add polls, questions, or quizzes to boost engagement
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Post Consistently:</strong> Maintain regular posting to stay visible
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Behind-the-Scenes:</strong> Show authentic moments to build connection
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Use Hashtags:</strong> Add relevant hashtags to increase discoverability
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Tag Locations:</strong> Include location tags for local discovery
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="card-title mb-0">
+                      <i class="fas fa-film text-primary me-2"></i>
+                      Instagram Reels Best Practices
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-unstyled">
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Hook in First 3 Seconds:</strong> Grab attention immediately
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Use Trending Audio:</strong> Leverage popular sounds for better reach
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Vertical Format:</strong> Film in 9:16 aspect ratio for best results
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Add Captions:</strong> Include text captions for accessibility
+                      </li>
+                      <li class="mb-3">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Call-to-Action:</strong> End with clear next steps for viewers
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-4">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="card-title mb-0">
+                      <i class="fas fa-chart-line text-primary me-2"></i>
+                      Optimization Recommendations
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                          <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                          <h6>Optimal Timing</h6>
+                          <p class="text-muted small mb-0">Post when your audience is most active for maximum reach</p>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                          <i class="fas fa-hashtag fa-2x text-warning mb-2"></i>
+                          <h6>Smart Hashtags</h6>
+                          <p class="text-muted small mb-0">Use a mix of trending and niche hashtags for better discovery</p>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                          <i class="fas fa-users fa-2x text-success mb-2"></i>
+                          <h6>Engage Actively</h6>
+                          <p class="text-muted small mb-0">Respond to comments and messages quickly to boost engagement</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize charts if analytics tab is available
+  if (document.getElementById('performanceChart')) {
+    initializeAnalyticsCharts();
+  }
+
+  // Initialize video controls
+  initializeVideoControls();
+});
+
+function previewStory(storyId) {
+  // Implementation for story preview modal
+  alert('Story preview feature - ID: ' + storyId);
+}
+
+function previewReel(reelId) {
+  // Implementation for reel preview modal
+  alert('Reel preview feature - ID: ' + reelId);
+}
+
+function viewAnalytics(contentId) {
+  // Implementation for detailed analytics modal
+  alert('Analytics view feature - ID: ' + contentId);
+}
+
+function toggleVideo(button) {
+  const video = button.closest('.reel-preview').querySelector('video');
+  const icon = button.querySelector('i');
+
+  if (video.paused) {
+    video.play();
+    icon.className = 'fas fa-pause';
+  } else {
+    video.pause();
+    icon.className = 'fas fa-play';
+  }
+}
+
+function initializeVideoControls() {
+  document.querySelectorAll('.reel-preview video').forEach(video => {
+    video.addEventListener('ended', function() {
+      const playBtn = this.parentElement.querySelector('.play-btn i');
+      if (playBtn) {
+        playBtn.className = 'fas fa-play';
+      }
+    });
+  });
+}
+
+function initializeAnalyticsCharts() {
+  // Performance comparison chart
+  const ctx1 = document.getElementById('performanceChart').getContext('2d');
+  new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: ['Stories', 'Reels'],
+      datasets: [{
+        data: [<%= @analytics_summary[:stories_count] %>, <%= @analytics_summary[:reels_count] %>],
+        backgroundColor: ['#007bff', '#28a745'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  // Trend chart
+  const ctx2 = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [
+        {
+          label: 'Stories',
+          data: [2, 1, 3, 2, 4, 1, 2], // Sample data
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0, 123, 255, 0.1)',
+          tension: 0.4
+        },
+        {
+          label: 'Reels',
+          data: [1, 2, 1, 3, 2, 3, 4], // Sample data
+          borderColor: '#28a745',
+          backgroundColor: 'rgba(40, 167, 69, 0.1)',
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top'
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          stepSize: 1
+        }
+      }
+    }
+  });
+}
+</script>
+
+<style>
+.story-card, .reel-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.story-card:hover, .reel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.play-btn {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.play-btn:hover {
+  opacity: 1;
+}
+
+.reel-preview:hover .play-btn {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.nav-tabs .nav-link {
+  color: #6c757d;
+}
+
+.nav-tabs .nav-link.active {
+  color: #007bff;
+  font-weight: 500;
+}
+</style>

@@ -1,0 +1,42 @@
+class CreateSpreeSocialMediaComments < ActiveRecord::Migration[7.2]
+  def change
+    create_table :spree_social_media_comments do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }
+      t.references :social_media_post, null: true, foreign_key: { to_table: :spree_social_media_posts }
+      t.string :platform_comment_id, null: false
+      t.string :platform_post_id
+      t.text :comment_text, null: false
+      t.string :from_user_id, null: false
+      t.string :from_user_username
+      t.integer :from_user_followers_count
+      t.json :from_user_data
+      t.string :comment_type, default: 'comment'
+      t.string :parent_comment_id
+      t.integer :likes_count, default: 0
+      t.integer :replies_count, default: 0
+      t.boolean :is_reply, default: false
+      t.boolean :is_hidden, default: false
+      t.boolean :flagged_for_review, default: false
+      t.string :moderation_status, default: 'pending'
+      t.text :moderation_notes
+      t.string :sentiment_label
+      t.float :sentiment_score
+      t.json :auto_reply_suggestions
+      t.boolean :requires_response, default: false
+      t.datetime :replied_at
+      t.string :business_reply_comment_id
+      t.json :comment_metadata
+      t.datetime :commented_at, null: false
+      t.timestamps
+
+      t.index [:social_media_account_id, :platform_comment_id], unique: true, name: 'idx_comments_account_platform'
+      t.index [:social_media_post_id, :created_at]
+      t.index [:from_user_id, :commented_at]
+      t.index [:moderation_status, :created_at]
+      t.index [:sentiment_label, :sentiment_score]
+      t.index [:flagged_for_review, :created_at]
+      t.index [:requires_response, :replied_at]
+      t.index [:is_reply, :parent_comment_id]
+    end
+  end
+end

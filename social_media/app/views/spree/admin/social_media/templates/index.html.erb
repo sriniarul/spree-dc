@@ -1,0 +1,546 @@
+<% content_for :page_title do %>
+  <%= Spree.t(:content_templates) %>
+<% end %>
+
+<div class="templates-dashboard">
+  <!-- Header with actions -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-layer-group text-primary me-2"></i>
+        <%= Spree.t(:content_templates) %>
+      </h5>
+
+      <div class="d-flex align-items-center">
+        <div class="btn-group me-3" role="group">
+          <%= link_to admin_social_media_templates_path(type: ''), class: "btn btn-sm #{'btn-primary' if params[:type].blank?} #{'btn-outline-primary' if params[:type].present?}" do %>
+            All
+          <% end %>
+          <% Spree::SocialMediaTemplate::TEMPLATE_TYPES.each do |key, label| %>
+            <%= link_to admin_social_media_templates_path(type: key), class: "btn btn-sm #{'btn-primary' if params[:type] == key} #{'btn-outline-primary' if params[:type] != key}" do %>
+              <%= label %>
+            <% end %>
+          <% end %>
+        </div>
+
+        <div class="dropdown me-3">
+          <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-filter me-1"></i>
+            Filter
+          </button>
+          <div class="dropdown-menu">
+            <%= form_with url: admin_social_media_templates_path, method: :get, local: true, html: { class: 'px-3 py-2' } do |f| %>
+              <div class="mb-2">
+                <%= f.select :category,
+                            options_from_collection_for_select(Spree::SocialMediaTemplate.content_category_options, :last, :first, params[:category]),
+                            { prompt: 'All Categories' },
+                            { class: 'form-select form-select-sm' } %>
+              </div>
+              <div class="mb-2">
+                <%= f.select :active,
+                            [['All Templates', ''], ['Active Only', 'true'], ['Inactive Only', 'false']],
+                            { selected: params[:active] },
+                            { class: 'form-select form-select-sm' } %>
+              </div>
+              <%= f.hidden_field :type, value: params[:type] %>
+              <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-plus me-1"></i>
+            New Template
+          </button>
+          <div class="dropdown-menu">
+            <% Spree::SocialMediaTemplate::TEMPLATE_TYPES.each do |key, label| %>
+              <%= link_to new_admin_social_media_template_path(type: key), class: 'dropdown-item' do %>
+                <i class="fas fa-file me-2"></i>
+                <%= label %>
+              <% end %>
+            <% end %>
+            <div class="dropdown-divider"></div>
+            <%= link_to library_admin_social_media_templates_path, class: 'dropdown-item' do %>
+              <i class="fas fa-book me-2"></i>
+              Browse Template Library
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-layer-group fa-2x me-3"></i>
+            <div>
+              <h6 class="card-title">Total Templates</h6>
+              <h3 class="mb-0"><%= @templates.total_count %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle fa-2x me-3"></i>
+            <div>
+              <h6 class="card-title">Active Templates</h6>
+              <h3 class="mb-0"><%= @vendor.social_media_templates.active.count %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-star fa-2x me-3"></i>
+            <div>
+              <h6 class="card-title">Most Popular</h6>
+              <h3 class="mb-0"><%= @popular_templates.first&.name&.truncate(15) || 'None' %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-chart-line fa-2x me-3"></i>
+            <div>
+              <h6 class="card-title">Posts Created</h6>
+              <h3 class="mb-0"><%= @vendor.social_media_posts.where.not(template_id: nil).count %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Templates Grid -->
+  <% if @templates.any? %>
+    <div class="row">
+      <% @templates.each do |template| %>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card template-card h-100" data-template-id="<%= template.id %>">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-<%= template_type_color(template.template_type) %> me-2">
+                  <%= template.template_type_display %>
+                </span>
+                <% unless template.active? %>
+                  <span class="badge bg-secondary">Inactive</span>
+                <% end %>
+              </div>
+
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <%= link_to admin_social_media_template_path(template), class: 'dropdown-item' do %>
+                    <i class="fas fa-eye me-2"></i>
+                    View
+                  <% end %>
+                  <%= link_to edit_admin_social_media_template_path(template), class: 'dropdown-item' do %>
+                    <i class="fas fa-edit me-2"></i>
+                    Edit
+                  <% end %>
+                  <%= link_to duplicate_admin_social_media_template_path(template), method: :post, class: 'dropdown-item' do %>
+                    <i class="fas fa-copy me-2"></i>
+                    Duplicate
+                  <% end %>
+                  <%= link_to preview_admin_social_media_template_path(template), class: 'dropdown-item preview-template' do %>
+                    <i class="fas fa-search me-2"></i>
+                    Preview
+                  <% end %>
+                  <div class="dropdown-divider"></div>
+                  <% if template.active? %>
+                    <%= link_to admin_social_media_template_path(template, social_media_template: { active: false }), method: :patch, class: 'dropdown-item text-warning' do %>
+                      <i class="fas fa-pause me-2"></i>
+                      Deactivate
+                    <% end %>
+                  <% else %>
+                    <%= link_to admin_social_media_template_path(template, social_media_template: { active: true }), method: :patch, class: 'dropdown-item text-success' do %>
+                      <i class="fas fa-play me-2"></i>
+                      Activate
+                    <% end %>
+                  <% end %>
+                  <div class="dropdown-divider"></div>
+                  <%= link_to admin_social_media_template_path(template), method: :delete,
+                             class: 'dropdown-item text-danger',
+                             confirm: 'Are you sure? This action cannot be undone.',
+                             disable_with: 'Deleting...' do %>
+                    <i class="fas fa-trash me-2"></i>
+                    Delete
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Template Media Preview -->
+            <% if template.template_media.attached? %>
+              <div class="template-media-preview" style="height: 200px; overflow: hidden;">
+                <% first_media = template.template_media.first %>
+                <% if first_media.image? %>
+                  <%= image_tag first_media, class: 'card-img-top', style: 'height: 200px; object-fit: cover;' %>
+                <% elsif first_media.video? %>
+                  <video class="card-img-top" style="height: 200px; object-fit: cover;" muted>
+                    <source src="<%= url_for(first_media) %>" type="<%= first_media.content_type %>">
+                  </video>
+                <% end %>
+                <% if template.template_media.count > 1 %>
+                  <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-dark">+<%= template.template_media.count - 1 %></span>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                <i class="fas fa-image fa-3x text-muted"></i>
+              </div>
+            <% end %>
+
+            <div class="card-body">
+              <h6 class="card-title">
+                <%= link_to template.name, admin_social_media_template_path(template), class: 'text-decoration-none' %>
+              </h6>
+
+              <p class="card-text">
+                <small class="text-muted">
+                  <%= template.content_category_display %>
+                </small>
+              </p>
+
+              <!-- Template Preview -->
+              <% if template.preview_text.present? %>
+                <p class="card-text small">
+                  <%= simple_format(template.preview_text, {}, wrapper_tag: 'span') %>
+                </p>
+              <% end %>
+
+              <!-- Template Variables -->
+              <% if template.template_variables.any? %>
+                <div class="mb-2">
+                  <small class="text-muted">Variables:</small>
+                  <% template.template_variables.first(3).each do |variable| %>
+                    <span class="badge bg-light text-dark"><%= variable %></span>
+                  <% end %>
+                  <% if template.template_variables.length > 3 %>
+                    <small class="text-muted">+<%= template.template_variables.length - 3 %> more</small>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="card-footer">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <small class="text-muted">
+                    Used: <%= template.usage_count %> times
+                    <% if template.last_used_at %>
+                      <br>Last: <%= time_ago_in_words(template.last_used_at) %> ago
+                    <% end %>
+                  </small>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                  <%= link_to edit_admin_social_media_template_path(template), class: 'btn btn-outline-primary' do %>
+                    <i class="fas fa-edit"></i>
+                  <% end %>
+                  <button class="btn btn-outline-success use-template-btn" data-template-id="<%= template.id %>">
+                    <i class="fas fa-play"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @templates %>
+    </div>
+  <% else %>
+    <div class="text-center py-5">
+      <i class="fas fa-layer-group fa-5x text-muted mb-4"></i>
+      <h4>No Templates Found</h4>
+      <p class="text-muted mb-4">
+        <% if params[:type].present? || params[:category].present? %>
+          No templates match your current filters. Try adjusting your search criteria.
+        <% else %>
+          Get started by creating your first content template to streamline your social media posting.
+        <% end %>
+      </p>
+
+      <div class="d-flex justify-content-center gap-2">
+        <%= link_to new_admin_social_media_template_path, class: 'btn btn-primary' do %>
+          <i class="fas fa-plus me-1"></i>
+          Create Your First Template
+        <% end %>
+
+        <%= link_to library_admin_social_media_templates_path, class: 'btn btn-outline-primary' do %>
+          <i class="fas fa-book me-1"></i>
+          Browse Template Library
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: bulk_actions_admin_social_media_templates_path, method: :post, local: true do |f| %>
+          <div class="mb-3">
+            <%= f.select :bulk_action,
+                        [['Activate', 'activate'], ['Deactivate', 'deactivate'], ['Delete', 'delete']],
+                        { prompt: 'Select action' },
+                        { class: 'form-select', required: true } %>
+          </div>
+          <p>Selected templates: <span id="selectedCount">0</span></p>
+          <div id="selectedTemplates"></div>
+        <% end %>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="executeBulkAction">Execute</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Template Preview Modal -->
+<div class="modal fade" id="templatePreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Template Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="templatePreviewContent">
+        <!-- Preview content will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="useTemplateBtn">Use This Template</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let selectedTemplates = new Set();
+
+  // Template selection for bulk actions
+  document.querySelectorAll('.template-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const templateId = this.dataset.templateId;
+
+        if (selectedTemplates.has(templateId)) {
+          selectedTemplates.delete(templateId);
+          this.classList.remove('selected');
+        } else {
+          selectedTemplates.add(templateId);
+          this.classList.add('selected');
+        }
+
+        updateSelectedCount();
+      }
+    });
+  });
+
+  // Preview template functionality
+  document.querySelectorAll('.preview-template').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const templateId = this.closest('.template-card').dataset.templateId;
+      previewTemplate(templateId);
+    });
+  });
+
+  // Use template buttons
+  document.querySelectorAll('.use-template-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const templateId = this.dataset.templateId;
+      useTemplate(templateId);
+    });
+  });
+
+  function updateSelectedCount() {
+    const count = selectedTemplates.size;
+    document.getElementById('selectedCount').textContent = count;
+
+    const container = document.getElementById('selectedTemplates');
+    container.innerHTML = '';
+
+    if (count > 0) {
+      selectedTemplates.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'template_ids[]';
+        input.value = id;
+        container.appendChild(input);
+      });
+    }
+  }
+
+  function previewTemplate(templateId) {
+    const modal = new bootstrap.Modal(document.getElementById('templatePreviewModal'));
+    const content = document.getElementById('templatePreviewContent');
+
+    content.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Loading preview...</p></div>';
+    modal.show();
+
+    fetch(`/admin/social_media/templates/${templateId}/preview`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        content.innerHTML = `
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Caption Preview</h6>
+              <div class="border rounded p-3 mb-3 bg-light">
+                ${data.preview.caption || 'No caption'}
+              </div>
+
+              <h6>Hashtags</h6>
+              <div class="border rounded p-3 bg-light">
+                ${data.preview.hashtags || 'No hashtags'}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6>Template Variables</h6>
+              <div class="border rounded p-3 mb-3">
+                ${data.variables_needed.length > 0
+                  ? data.variables_needed.map(v => `<span class="badge bg-primary me-1">${v}</span>`).join('')
+                  : 'No variables needed'
+                }
+              </div>
+
+              <h6>Media Requirements</h6>
+              <div class="border rounded p-3">
+                ${data.media_requirements ? JSON.stringify(JSON.parse(data.media_requirements), null, 2) : 'No specific requirements'}
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('useTemplateBtn').onclick = () => useTemplate(templateId);
+      } else {
+        content.innerHTML = '<div class="alert alert-danger">Failed to load template preview</div>';
+      }
+    })
+    .catch(error => {
+      content.innerHTML = '<div class="alert alert-danger">Error loading preview</div>';
+    });
+  }
+
+  function useTemplate(templateId) {
+    // Redirect to create new post with this template
+    window.location.href = `/admin/social_media/content/new_post?template_id=${templateId}`;
+  }
+
+  // Bulk actions
+  document.getElementById('executeBulkAction').addEventListener('click', function() {
+    if (selectedTemplates.size === 0) {
+      alert('Please select at least one template');
+      return;
+    }
+
+    const form = document.querySelector('#bulkActionsModal form');
+    const action = form.querySelector('select[name="bulk_action"]').value;
+
+    if (!action) {
+      alert('Please select an action');
+      return;
+    }
+
+    if (action === 'delete') {
+      if (!confirm(`Are you sure you want to delete ${selectedTemplates.size} templates? This action cannot be undone.`)) {
+        return;
+      }
+    }
+
+    form.submit();
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      window.location.href = '<%= new_admin_social_media_template_path %>';
+    }
+
+    if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      document.querySelectorAll('.template-card').forEach(card => {
+        const templateId = card.dataset.templateId;
+        selectedTemplates.add(templateId);
+        card.classList.add('selected');
+      });
+      updateSelectedCount();
+    }
+  });
+});
+</script>
+
+<style>
+.template-card.selected {
+  border-color: #0d6efd !important;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.template-media-preview {
+  position: relative;
+}
+
+.badge.bg-light {
+  color: #6c757d !important;
+}
+
+<% Spree::SocialMediaTemplate::TEMPLATE_TYPES.each_with_index do |(key, _), index| %>
+  .badge.bg-<%= template_type_color(key) %> {
+    background-color: <%= ['#007bff', '#28a745', '#17a2b8', '#ffc107'][index % 4] %> !important;
+  }
+<% end %>
+</style>
+
+<% content_for :head do %>
+  <style>
+    .template-card {
+      transition: all 0.2s ease;
+    }
+
+    .template-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+  </style>
+<% end %>

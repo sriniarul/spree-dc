@@ -1,0 +1,49 @@
+class CreateSpreeSocialMediaAccounts < ActiveRecord::Migration[7.0]
+  def change
+    create_table :spree_social_media_accounts do |t|
+      t.references :vendor, null: false, foreign_key: { to_table: :spree_vendors }
+      t.string :platform, null: false
+      t.string :platform_user_id, null: false
+      t.string :username
+      t.string :display_name
+      t.text :bio
+      t.string :profile_image_url
+      t.string :website_url
+      t.string :phone_number # For WhatsApp Business
+      t.string :status, null: false, default: 'active'
+
+      # OAuth tokens
+      t.text :access_token
+      t.text :refresh_token
+      t.datetime :expires_at
+      t.json :token_metadata
+
+      # Platform-specific data
+      t.string :page_id # Facebook page ID
+      t.string :page_name # Facebook page name
+      t.integer :followers_count, default: 0
+      t.integer :following_count, default: 0
+      t.integer :posts_count, default: 0
+
+      # Configuration
+      t.boolean :auto_post_enabled, default: false
+      t.boolean :analytics_enabled, default: true
+      t.text :post_template
+
+      # Error handling
+      t.text :last_error
+      t.datetime :last_sync_at
+      t.datetime :last_error_at
+
+      t.timestamps
+      t.datetime :deleted_at
+    end
+
+    add_index :spree_social_media_accounts, [:vendor_id, :platform, :platform_user_id],
+              unique: true,
+              name: 'index_social_media_accounts_on_vendor_platform_user'
+    add_index :spree_social_media_accounts, :platform
+    add_index :spree_social_media_accounts, :status
+    add_index :spree_social_media_accounts, :deleted_at
+  end
+end

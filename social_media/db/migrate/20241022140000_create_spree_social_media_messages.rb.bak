@@ -1,0 +1,34 @@
+class CreateSpreeSocialMediaMessages < ActiveRecord::Migration[7.0]
+  def change
+    create_table :spree_social_media_messages do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }
+
+      t.string :platform_message_id, null: false
+      t.string :sender_id, null: false
+      t.string :recipient_id
+      t.string :message_type, null: false
+
+      t.text :message_text
+      t.decimal :sentiment_score, precision: 3, scale: 2
+      t.string :priority_level, default: 'low'
+
+      t.boolean :read, default: false
+      t.datetime :read_at
+      t.boolean :responded, default: false
+      t.datetime :responded_at
+
+      t.text :metadata
+      t.datetime :received_at, null: false
+      t.timestamps
+    end
+
+    add_index :spree_social_media_messages, [:social_media_account_id, :platform_message_id],
+              unique: true, name: 'index_spree_social_media_messages_uniqueness'
+    add_index :spree_social_media_messages, :sender_id
+    add_index :spree_social_media_messages, :message_type
+    add_index :spree_social_media_messages, :priority_level
+    add_index :spree_social_media_messages, :read
+    add_index :spree_social_media_messages, :responded
+    add_index :spree_social_media_messages, :received_at
+  end
+end

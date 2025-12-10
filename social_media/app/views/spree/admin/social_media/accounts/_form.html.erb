@@ -1,0 +1,56 @@
+<%= form_with model: [@account], url: spree.admin_social_media_account_path(@account), local: true do |f| %>
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">
+        <%= icon 'settings' %>
+        Account Settings
+      </h5>
+    </div>
+    <div class="card-body">
+      <%= f.spree_text_field :display_name,
+                            placeholder: 'Display name for this account',
+                            help_text: 'This name will be shown in your dashboard' %>
+
+      <%= f.spree_text_field :username,
+                            placeholder: 'Username or handle',
+                            help_text: 'Your social media username (without @)' %>
+
+      <%= f.spree_text_area :bio,
+                          rows: 3,
+                          placeholder: 'Account bio or description',
+                          help_text: 'A brief description of this account' %>
+
+      <%= f.spree_url_field :website_url,
+                          placeholder: 'https://yourwebsite.com',
+                          help_text: 'Website associated with this account' %>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">
+        <%= icon 'robot' %>
+        Automation Settings
+      </h5>
+    </div>
+    <div class="card-body">
+      <%= f.spree_check_box :auto_post_enabled,
+                          label: 'Enable automatic posting',
+                          help_text: 'Automatically post when products are published' %>
+
+      <%= f.spree_check_box :analytics_enabled,
+                          label: 'Enable analytics tracking',
+                          help_text: 'Collect and track engagement metrics' %>
+
+      <%= f.spree_text_area :post_template,
+                          rows: 4,
+                          placeholder: 'Check out our new product: {product_name}! {product_url} #newproduct',
+                          help_text: 'Template for automatic posts. Use {product_name}, {product_url}, {product_description} as placeholders' %>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= f.submit 'Update Account', class: 'btn btn-primary' %>
+    <%= link_to 'Cancel', spree.admin_social_media_account_path(@account), class: 'btn btn-outline-secondary' %>
+  </div>
+<% end %>

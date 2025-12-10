@@ -1,0 +1,29 @@
+<td class="actions text-center">
+  <% if product.images.any? %>
+    <%= button_tag type: 'button',
+                   class: 'btn btn-sm btn-outline-primary',
+                   title: Spree.t('admin.social_media.post_product'),
+                   data: {
+                     bs_toggle: 'modal',
+                     bs_target: '#imageGalleryModal',
+                     product_id: product.id,
+                     product_name: product.name,
+                     product_price: product.display_price.to_s,
+                     product_images: product.images.map { |img|
+                       {
+                         id: img.id,
+                         url: spree_image_url(img, variant: :large),
+                         thumb_url: spree_image_url(img, variant: :small),
+                         blob_signed_id: img.attachment.blob.signed_id
+                       }
+                     }.to_json,
+                     action: 'click->image-gallery#openModal'
+                   } do %>
+      <%= icon('share', size: '1rem') %>
+    <% end %>
+  <% else %>
+    <span class="text-muted" title="<%= Spree.t('admin.social_media.no_images') %>">
+      <%= icon('photo-off', size: '1rem') %>
+    </span>
+  <% end %>
+</td>

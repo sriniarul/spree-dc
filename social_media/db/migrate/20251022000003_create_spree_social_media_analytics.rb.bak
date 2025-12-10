@@ -1,0 +1,20 @@
+class CreateSpreeSocialMediaAnalytics < ActiveRecord::Migration[7.0]
+  def change
+    create_table :spree_social_media_analytics do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }
+      t.date :date, null: false
+      t.integer :impressions, null: false, default: 0
+      t.integer :likes, null: false, default: 0
+      t.integer :comments, null: false, default: 0
+      t.integer :shares, null: false, default: 0
+      t.integer :clicks, null: false, default: 0
+      t.datetime :deleted_at
+      t.timestamps
+    end
+
+    add_index :spree_social_media_analytics, [:social_media_account_id, :date],
+              name: 'index_social_media_analytics_on_account_and_date', unique: true
+    add_index :spree_social_media_analytics, :date
+    add_index :spree_social_media_analytics, :deleted_at
+  end
+end

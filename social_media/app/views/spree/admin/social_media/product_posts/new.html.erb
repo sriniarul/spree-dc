@@ -1,0 +1,313 @@
+<% content_for :page_title do %>
+  Post <%= @product.name %> to Social Media
+<% end %>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">Post Product to Social Media</h4>
+        <%= link_to "Back to Products", spree.admin_products_path, class: "btn btn-outline-secondary btn-sm" %>
+      </div>
+
+      <div class="card-body">
+        <%= form_with url: spree.post_to_social_media_admin_product_path(@product),
+                     method: :post,
+                     local: true,
+                     multipart: true do |f| %>
+
+          <!-- Product Preview -->
+          <div class="mb-4 p-3 bg-light rounded">
+            <div class="d-flex align-items-start">
+              <div class="mr-3">
+                <% if @product.images.any? %>
+                  <%= image_tag main_app.url_for(@product.images.first.attachment),
+                               class: 'img-thumbnail',
+                               style: 'max-height: 100px; max-width: 100px;' %>
+                <% else %>
+                  <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                       style="width: 100px; height: 100px;">
+                    <i class="fa fa-image fa-2x"></i>
+                  </div>
+                <% end %>
+              </div>
+              <div class="flex-grow-1">
+                <h5 class="mb-1"><%= @product.name %></h5>
+                <p class="text-muted mb-0"><%= @product.display_price %></p>
+                <small class="text-muted" id="image-count-display">
+                  <%= pluralize(@product.images.count, 'image') %> will be posted
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Images Preview -->
+          <div class="mb-4" id="selected-images-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Selected Images (In Order)</label>
+              <button type="button" class="btn btn-sm btn-outline-primary" onclick="reorderImages()">
+                <i class="fa fa-edit"></i> Reorder Images
+              </button>
+            </div>
+            <div class="row g-2" id="selected-images-preview">
+              <!-- Selected images will be displayed here -->
+            </div>
+            <input type="hidden" name="selected_image_ids" id="selected-image-ids-input">
+            <input type="hidden" name="selected_image_order" id="selected-image-order-input">
+          </div>
+
+          <!-- Platform Selection -->
+          <div class="form-group">
+            <%= label_tag :social_media_account_id, "Select Platform", class: "form-label" %>
+            <%= select_tag :social_media_account_id,
+                options_from_collection_for_select(@social_media_accounts, :id, :display_name_with_platform),
+                class: "form-select",
+                required: true,
+                include_blank: "Choose platform..." %>
+            <small class="form-text text-muted">
+              Select which social media account to post to
+            </small>
+          </div>
+
+          <!-- Content Type -->
+          <div class="form-group">
+            <%= label_tag :content_type, "Content Type", class: "form-label" %>
+            <%= select_tag :content_type,
+                options_for_select([
+                  ['Feed Post (Permanent)', 'feed'],
+                  ['Story (24 hours)', 'story'],
+                  ['Reel (Short video)', 'reel']
+                ], 'feed'),
+                class: "form-select",
+                required: true,
+                id: 'content-type-select' %>
+            <small class="form-text text-muted" id="content-type-help">
+              Feed posts are permanent. Stories disappear after 24 hours.
+            </small>
+          </div>
+
+          <!-- Caption -->
+          <div class="form-group">
+            <%= label_tag :caption, "Caption", class: "form-label" %>
+            <%= text_area_tag :caption, @suggested_caption,
+                class: "form-control",
+                rows: 6,
+                required: true %>
+            <small class="form-text text-muted">
+              <span id="caption-counter"><%= @suggested_caption.length %></span> characters
+            </small>
+          </div>
+
+          <!-- Hashtags -->
+          <div class="form-group">
+            <%= label_tag :hashtags, "Hashtags", class: "form-label" %>
+            <%= text_field_tag :hashtags, '',
+                class: "form-control",
+                placeholder: "#fashion #shopping #newcollection" %>
+            <small class="form-text text-muted">
+              Add relevant hashtags (max 30 for Instagram)
+            </small>
+          </div>
+
+          <!-- Publishing Options -->
+          <div class="form-group">
+            <label class="form-label">Publishing Options</label>
+            <div class="form-check">
+              <%= radio_button_tag :publish_option, 'now', true,
+                  class: "form-check-input",
+                  id: 'publish_now' %>
+              <label class="form-check-label" for="publish_now">
+                Publish Now
+              </label>
+            </div>
+            <div class="form-check">
+              <%= radio_button_tag :publish_option, 'schedule', false,
+                  class: "form-check-input",
+                  id: 'schedule_later' %>
+              <label class="form-check-label" for="schedule_later">
+                Schedule for Later
+              </label>
+            </div>
+          </div>
+
+          <!-- Schedule Date/Time -->
+          <div class="form-group" id="schedule-section" style="display: none;">
+            <%= label_tag :scheduled_at, "Schedule Date & Time", class: "form-label" %>
+            <%= datetime_local_field_tag :scheduled_at, nil, class: "form-control" %>
+            <small class="form-text text-muted">
+              Post will be published automatically at the scheduled time
+            </small>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-group mt-4">
+            <%= hidden_field_tag :publish_now, 'true', id: 'publish_now_input' %>
+            <%= submit_tag "Publish Now", class: "btn btn-primary", id: "submit-btn" %>
+            <%= link_to "Cancel", spree.admin_products_path, class: "btn btn-outline-secondary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Panel -->
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Post Preview</h5>
+      </div>
+      <div class="card-body">
+        <div id="post-preview">
+          <% if @product.images.any? %>
+            <%= image_tag main_app.url_for(@product.images.first.attachment),
+                         class: 'img-fluid rounded mb-3' %>
+          <% end %>
+          <div class="small">
+            <div class="mb-2" id="preview-caption">
+              <%= simple_format(@suggested_caption) %>
+            </div>
+            <div class="text-primary" id="preview-hashtags"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6 class="card-title mb-0">Tips for Better Engagement</h6>
+      </div>
+      <div class="card-body">
+        <ul class="small mb-0">
+          <li>Post during peak hours (9 AM - 3 PM)</li>
+          <li>Use high-quality product images</li>
+          <li>Include clear call-to-action</li>
+          <li>Use relevant hashtags (5-10 recommended)</li>
+          <li>Engage with comments quickly</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Load selected images from sessionStorage
+  loadSelectedImages();
+
+  // Character counter
+  const captionField = document.querySelector('textarea[name="caption"]');
+  const captionCounter = document.getElementById('caption-counter');
+  const previewCaption = document.getElementById('preview-caption');
+
+  if (captionField) {
+    captionField.addEventListener('input', function() {
+      captionCounter.textContent = this.value.length;
+      previewCaption.textContent = this.value;
+    });
+  }
+
+  // Hashtag preview
+  const hashtagField = document.querySelector('input[name="hashtags"]');
+  const previewHashtags = document.getElementById('preview-hashtags');
+
+  if (hashtagField) {
+    hashtagField.addEventListener('input', function() {
+      previewHashtags.textContent = this.value;
+    });
+  }
+
+  // Scheduling options
+  const publishNow = document.getElementById('publish_now');
+  const scheduleLater = document.getElementById('schedule_later');
+  const scheduleSection = document.getElementById('schedule-section');
+  const publishNowInput = document.getElementById('publish_now_input');
+  const submitBtn = document.getElementById('submit-btn');
+
+  if (publishNow && scheduleLater) {
+    publishNow.addEventListener('change', function() {
+      if (this.checked) {
+        scheduleSection.style.display = 'none';
+        publishNowInput.value = 'true';
+        submitBtn.value = 'Publish Now';
+        submitBtn.className = 'btn btn-primary';
+      }
+    });
+
+    scheduleLater.addEventListener('change', function() {
+      if (this.checked) {
+        scheduleSection.style.display = 'block';
+        publishNowInput.value = 'false';
+        submitBtn.value = 'Schedule Post';
+        submitBtn.className = 'btn btn-success';
+      }
+    });
+  }
+});
+
+function loadSelectedImages() {
+  const selectedImagesJson = sessionStorage.getItem('selectedImages');
+
+  if (!selectedImagesJson) {
+    // No selected images, use all product images by default
+    return;
+  }
+
+  const selectedImages = JSON.parse(selectedImagesJson);
+
+  if (selectedImages.length === 0) {
+    return;
+  }
+
+  // Show selected images section
+  const section = document.getElementById('selected-images-section');
+  if (section) {
+    section.style.display = 'block';
+  }
+
+  // Update image count
+  const countDisplay = document.getElementById('image-count-display');
+  if (countDisplay) {
+    countDisplay.textContent = `${selectedImages.length} selected image${selectedImages.length !== 1 ? 's' : ''} will be posted`;
+  }
+
+  // Render selected images
+  const previewContainer = document.getElementById('selected-images-preview');
+  if (previewContainer) {
+    previewContainer.innerHTML = '';
+
+    selectedImages.forEach((image, index) => {
+      const col = document.createElement('div');
+      col.className = 'col-md-2 col-sm-3 col-4';
+      col.innerHTML = `
+        <div class="border rounded p-1 position-relative">
+          <div class="position-absolute top-0 start-0 m-1 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 12px; font-weight: bold;">
+            ${index + 1}
+          </div>
+          <img src="${image.url}" alt="Selected image ${index + 1}" class="w-100" style="height: 120px; object-fit: cover; border-radius: 4px;">
+        </div>
+      `;
+      previewContainer.appendChild(col);
+    });
+  }
+
+  // Store image IDs and order in hidden fields
+  const imageIds = selectedImages.map(img => img.id).join(',');
+  const imageOrder = selectedImages.map((img, index) => index).join(',');
+
+  document.getElementById('selected-image-ids-input').value = imageIds;
+  document.getElementById('selected-image-order-input').value = imageOrder;
+
+  // Store full image data as well for controller use
+  document.getElementById('selected-image-ids-input').dataset.selectedImages = selectedImagesJson;
+
+  // Clear sessionStorage after loading
+  sessionStorage.removeItem('selectedImages');
+}
+
+function reorderImages() {
+  // Redirect back to product page to open modal again
+  const productId = window.location.pathname.match(/\/products\/([^\/]+)/)[1];
+  window.location.href = `/admin/products?product_id=${productId}#reorder`;
+}
+</script>

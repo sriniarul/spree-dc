@@ -1,0 +1,677 @@
+<% content_for :page_title do %>
+  <%= Spree.t(:hashtag_management) %>
+<% end %>
+
+<div class="hashtag-management-dashboard">
+  <!-- Header with account selector -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-hashtag text-primary me-2"></i>
+        <%= Spree.t(:hashtag_management) %>
+      </h5>
+
+      <div class="d-flex align-items-center">
+        <%= form_with url: request.path, method: :get, local: true, html: { class: 'me-3' } do |f| %>
+          <%= f.select :account_id,
+                      options_from_collection_for_select(@instagram_accounts, :id, :display_name, @current_account&.id),
+                      { prompt: 'Select Instagram Account' },
+                      { class: 'form-select', onchange: 'this.form.submit();' } %>
+        <% end %>
+
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#hashtagSearchModal">
+          <i class="fas fa-search me-1"></i>
+          <%= Spree.t(:search_hashtags) %>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <% if @current_account.nil? %>
+    <div class="alert alert-info text-center">
+      <i class="fas fa-info-circle me-2"></i>
+      Please connect an Instagram account to start managing hashtags.
+      <%= link_to "Connect Instagram", spree.new_admin_social_media_instagram_setup_path, class: 'btn btn-primary ms-2' %>
+    </div>
+  <% else %>
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-hashtag fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">Total Hashtags Used</h6>
+                <h3 class="mb-0"><%= @hashtag_analysis[:summary][:total_hashtags_used] || 0 %></h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-chart-line fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">Avg Performance</h6>
+                <h3 class="mb-0">
+                  <%= @hashtag_analysis[:performance_data].first(5).map { |h| h[:performance_score] }.sum / 5 rescue 0 %>
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card bg-info text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-save fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">Saved Sets</h6>
+                <h3 class="mb-0" id="savedSetsCount">0</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card bg-warning text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-fire fa-2x me-3"></i>
+              <div>
+                <h6 class="card-title">Trending</h6>
+                <h3 class="mb-0"><%= @trending_hashtags.count rescue 0 %></h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="card">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="hashtagTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab">
+              <i class="fas fa-chart-bar me-1"></i>
+              Performance Analysis
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="suggestions-tab" data-bs-toggle="tab" data-bs-target="#suggestions" type="button" role="tab">
+              <i class="fas fa-lightbulb me-1"></i>
+              Smart Suggestions
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="saved-sets-tab" data-bs-toggle="tab" data-bs-target="#saved-sets" type="button" role="tab">
+              <i class="fas fa-bookmark me-1"></i>
+              Saved Sets
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="trending-tab" data-bs-toggle="tab" data-bs-target="#trending" type="button" role="tab">
+              <i class="fas fa-fire me-1"></i>
+              Trending
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-body">
+        <div class="tab-content" id="hashtagTabsContent">
+          <!-- Performance Analysis Tab -->
+          <div class="tab-pane fade show active" id="performance" role="tabpanel">
+            <div class="row">
+              <div class="col-md-8">
+                <h6 class="mb-3">Top Performing Hashtags (Last 30 Days)</h6>
+
+                <% if @hashtag_analysis[:performance_data].any? %>
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Hashtag</th>
+                          <th>Usage</th>
+                          <th>Avg Reach</th>
+                          <th>Avg Engagement</th>
+                          <th>Engagement Rate</th>
+                          <th>Score</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% @hashtag_analysis[:performance_data].first(15).each do |hashtag| %>
+                          <tr>
+                            <td>
+                              <span class="badge bg-primary"<%= hashtag[:name] %></span>
+                            </td>
+                            <td><%= hashtag[:usage_count] %>x</td>
+                            <td><%= number_with_delimiter(hashtag[:avg_reach]) %></td>
+                            <td><%= number_with_delimiter(hashtag[:avg_engagement]) %></td>
+                            <td>
+                              <span class="badge <%= hashtag[:avg_engagement_rate] > 3 ? 'bg-success' : hashtag[:avg_engagement_rate] > 1 ? 'bg-warning' : 'bg-danger' %>">
+                                <%= hashtag[:avg_engagement_rate] %>%
+                              </span>
+                            </td>
+                            <td>
+                              <div class="progress" style="width: 60px;">
+                                <div class="progress-bar" style="width: <%= [hashtag[:performance_score], 100].min %>%"></div>
+                              </div>
+                              <small><%= hashtag[:performance_score] %></small>
+                            </td>
+                            <td>
+                              <button class="btn btn-sm btn-outline-primary" onclick="addToCurrentSet('<%= hashtag[:name] %>')">
+                                <i class="fas fa-plus"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </div>
+                <% else %>
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No hashtag performance data available yet. Start posting with hashtags to see analysis.
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="col-md-4">
+                <h6 class="mb-3">Performance Insights</h6>
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <small class="text-muted">Average Hashtags per Post</small>
+                      <h5><%= @hashtag_analysis[:summary][:avg_hashtags_per_post] || 0 %></h5>
+                    </div>
+
+                    <div class="mb-3">
+                      <small class="text-muted">Posts Analyzed</small>
+                      <h5><%= @hashtag_analysis[:summary][:total_posts_analyzed] || 0 %></h5>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-2">Recommendations</h6>
+                    <ul class="list-unstyled small">
+                      <li class="mb-1">
+                        <i class="fas fa-check text-success me-1"></i>
+                        Focus on hashtags with 60+ performance score
+                      </li>
+                      <li class="mb-1">
+                        <i class="fas fa-check text-success me-1"></i>
+                        Use 8-15 hashtags per post for optimal reach
+                      </li>
+                      <li class="mb-1">
+                        <i class="fas fa-check text-success me-1"></i>
+                        Mix popular and niche hashtags
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smart Suggestions Tab -->
+          <div class="tab-pane fade" id="suggestions" role="tabpanel">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-4">
+                  <h6>Generate Smart Suggestions</h6>
+                  <%= form_with url: "#", method: :post, local: false, html: { id: 'suggestionForm' } do |f| %>
+                    <div class="mb-3">
+                      <%= f.text_area :content_description,
+                                     placeholder: "Describe your post content (e.g., 'summer fashion collection with floral dresses')",
+                                     rows: 3,
+                                     class: 'form-control' %>
+                    </div>
+
+                    <div class="mb-3">
+                      <%= f.text_area :existing_hashtags,
+                                     placeholder: "Enter hashtags you're already using (optional)",
+                                     rows: 2,
+                                     class: 'form-control' %>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="generateSuggestions()">
+                      <i class="fas fa-magic me-1"></i>
+                      Generate Suggestions
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <h6>AI-Powered Suggestions</h6>
+                <div id="suggestionsResults" class="border rounded p-3" style="min-height: 200px;">
+                  <div class="text-center text-muted">
+                    <i class="fas fa-lightbulb fa-3x mb-2"></i>
+                    <p>Enter content description to get personalized hashtag suggestions</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saved Sets Tab -->
+          <div class="tab-pane fade" id="saved-sets" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6>Your Hashtag Collections</h6>
+              <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#saveHashtagSetModal">
+                <i class="fas fa-plus me-1"></i>
+                Create New Set
+              </button>
+            </div>
+
+            <div id="hashtagSets">
+              <div class="text-center text-muted">
+                <i class="fas fa-bookmark fa-3x mb-2"></i>
+                <p>Loading saved hashtag sets...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trending Tab -->
+          <div class="tab-pane fade" id="trending" role="tabpanel">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="mb-3">General Trending Hashtags</h6>
+                <% if @trending_hashtags.present? %>
+                  <div class="hashtag-cloud">
+                    <% @trending_hashtags.each do |hashtag| %>
+                      <span class="badge bg-secondary me-2 mb-2 hashtag-item" style="cursor: pointer;"
+                            onclick="addToCurrentSet('<%= hashtag[:name] %>')">
+                        <%= hashtag[:name] %>
+                        <small class="text-muted ms-1">(<%= number_with_delimiter(hashtag[:estimated_reach]) %>)</small>
+                      </span>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Loading trending hashtags...
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="col-md-6">
+                <h6 class="mb-3">Industry-Specific Trends</h6>
+                <div id="nicheTrending">
+                  <button class="btn btn-outline-primary" onclick="loadNicheTrending()">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    Load Industry Trends
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Hashtag Search Modal -->
+<div class="modal fade" id="hashtagSearchModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search Hashtags</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="text" class="form-control" id="hashtagSearchInput" placeholder="Enter keyword to search hashtags...">
+        </div>
+        <div id="searchResults">
+          <div class="text-center text-muted">
+            Enter a keyword to search for related hashtags
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Hashtag Set Modal -->
+<div class="modal fade" id="saveHashtagSetModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Save Hashtag Set</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: "#", method: :post, local: false, html: { id: 'saveHashtagSetForm' } do |f| %>
+          <div class="mb-3">
+            <%= f.text_field :name, placeholder: "Set name (e.g., 'Summer Collection')", class: 'form-control', required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.text_area :hashtags, id: 'currentHashtagSet', placeholder: "Add hashtags here...", rows: 4, class: 'form-control', required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.text_area :description, placeholder: "Optional description", rows: 2, class: 'form-control' %>
+          </div>
+        <% end %>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveHashtagSet()">Save Set</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Current Hashtag Builder (Fixed Bottom Panel) -->
+<div class="fixed-bottom bg-white border-top shadow-lg" id="hashtagBuilder" style="display: none;">
+  <div class="container-fluid p-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h6 class="mb-2">Current Hashtag Set</h6>
+        <div id="currentHashtags" class="hashtag-container" style="max-height: 100px; overflow-y: auto;">
+          <!-- Hashtags will be added here -->
+        </div>
+      </div>
+      <div class="col-md-4 text-end">
+        <span class="badge bg-primary me-2" id="hashtagCount">0/30</span>
+        <button class="btn btn-sm btn-outline-danger me-2" onclick="clearCurrentSet()">
+          <i class="fas fa-trash"></i>
+        </button>
+        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#saveHashtagSetModal">
+          <i class="fas fa-save"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for Hashtag Management -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  loadHashtagSets();
+
+  // Initialize search functionality
+  document.getElementById('hashtagSearchInput').addEventListener('input', debounce(searchHashtags, 500));
+});
+
+let currentHashtags = new Set();
+
+function addToCurrentSet(hashtag) {
+  if (currentHashtags.size >= 30) {
+    alert('Maximum 30 hashtags allowed per set');
+    return;
+  }
+
+  hashtag = hashtag.startsWith('#') ? hashtag : '#' + hashtag;
+  currentHashtags.add(hashtag);
+  updateHashtagBuilder();
+}
+
+function removeFromCurrentSet(hashtag) {
+  currentHashtags.delete(hashtag);
+  updateHashtagBuilder();
+}
+
+function updateHashtagBuilder() {
+  const builder = document.getElementById('hashtagBuilder');
+  const container = document.getElementById('currentHashtags');
+  const counter = document.getElementById('hashtagCount');
+  const textArea = document.getElementById('currentHashtagSet');
+
+  if (currentHashtags.size === 0) {
+    builder.style.display = 'none';
+    return;
+  }
+
+  builder.style.display = 'block';
+
+  container.innerHTML = '';
+  currentHashtags.forEach(hashtag => {
+    const span = document.createElement('span');
+    span.className = 'badge bg-primary me-1 mb-1';
+    span.innerHTML = `${hashtag} <i class="fas fa-times ms-1" style="cursor: pointer;" onclick="removeFromCurrentSet('${hashtag}')"></i>`;
+    container.appendChild(span);
+  });
+
+  counter.textContent = `${currentHashtags.size}/30`;
+  if (textArea) {
+    textArea.value = Array.from(currentHashtags).join(' ');
+  }
+}
+
+function clearCurrentSet() {
+  currentHashtags.clear();
+  updateHashtagBuilder();
+}
+
+function searchHashtags() {
+  const query = document.getElementById('hashtagSearchInput').value.trim();
+  if (!query) return;
+
+  fetch(`/admin/social_media/hashtags/search?query=${encodeURIComponent(query)}`, {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const container = document.getElementById('searchResults');
+
+    if (data.success && data.hashtags.length > 0) {
+      container.innerHTML = '<h6 class="mb-3">Search Results</h6>';
+
+      data.hashtags.forEach(hashtag => {
+        const div = document.createElement('div');
+        div.className = 'border rounded p-2 mb-2';
+        div.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>${hashtag.name}</strong>
+              <small class="text-muted d-block">${hashtag.media_count} posts • ${hashtag.difficulty} difficulty</small>
+            </div>
+            <button class="btn btn-sm btn-primary" onclick="addToCurrentSet('${hashtag.name}')">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    } else {
+      container.innerHTML = '<div class="alert alert-warning">No hashtags found for this search</div>';
+    }
+  })
+  .catch(error => {
+    console.error('Error searching hashtags:', error);
+  });
+}
+
+function generateSuggestions() {
+  const form = document.getElementById('suggestionForm');
+  const formData = new FormData(form);
+
+  document.getElementById('suggestionsResults').innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Generating suggestions...</p></div>';
+
+  fetch('/admin/social_media/hashtags/suggestions', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const container = document.getElementById('suggestionsResults');
+
+    if (data.success) {
+      container.innerHTML = `
+        <h6 class="mb-3">Recommended Hashtags</h6>
+        <div class="mb-3">
+          <small class="text-muted">Confidence Score: ${data.recommendation.confidence_score}%</small>
+        </div>
+      `;
+
+      data.ranked_suggestions.slice(0, 15).forEach(hashtag => {
+        const span = document.createElement('span');
+        span.className = 'badge bg-secondary me-1 mb-1';
+        span.style.cursor = 'pointer';
+        span.innerHTML = hashtag.name;
+        span.onclick = () => addToCurrentSet(hashtag.name);
+        container.appendChild(span);
+      });
+
+      const addAllBtn = document.createElement('button');
+      addAllBtn.className = 'btn btn-sm btn-success mt-2';
+      addAllBtn.innerHTML = '<i class="fas fa-plus-circle me-1"></i>Add All';
+      addAllBtn.onclick = () => {
+        data.ranked_suggestions.slice(0, 15).forEach(hashtag => {
+          addToCurrentSet(hashtag.name);
+        });
+      };
+      container.appendChild(addAllBtn);
+    } else {
+      container.innerHTML = '<div class="alert alert-danger">Failed to generate suggestions</div>';
+    }
+  })
+  .catch(error => {
+    console.error('Error generating suggestions:', error);
+    document.getElementById('suggestionsResults').innerHTML = '<div class="alert alert-danger">Error generating suggestions</div>';
+  });
+}
+
+function loadHashtagSets() {
+  fetch('/admin/social_media/hashtags/load_hashtag_sets', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const container = document.getElementById('hashtagSets');
+    document.getElementById('savedSetsCount').textContent = data.hashtag_sets.length;
+
+    if (data.success && data.hashtag_sets.length > 0) {
+      container.innerHTML = '';
+
+      data.hashtag_sets.forEach(set => {
+        const div = document.createElement('div');
+        div.className = 'card mb-3';
+        div.innerHTML = `
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="flex-grow-1">
+                <h6 class="card-title">${set.name}</h6>
+                <p class="card-text small text-muted">${set.description || 'No description'}</p>
+                <div class="hashtag-preview mb-2">
+                  ${set.hashtags.slice(0, 5).map(tag => `<span class="badge bg-light text-dark me-1">${tag}</span>`).join('')}
+                  ${set.hashtags.length > 5 ? `<small class="text-muted">+${set.hashtags.length - 5} more</small>` : ''}
+                </div>
+                <small class="text-muted">
+                  ${set.hashtags.length} hashtags • Used ${set.usage_count} times
+                  ${set.last_used ? `• Last used ${new Date(set.last_used).toLocaleDateString()}` : ''}
+                </small>
+              </div>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#" onclick="loadHashtagSet(${set.id})">Load to Builder</a></li>
+                  <li><a class="dropdown-item" href="#" onclick="copyHashtagSet(${set.id})">Copy Hashtags</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" href="#" onclick="deleteHashtagSet(${set.id})">Delete</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    } else {
+      container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-bookmark fa-3x mb-2"></i><p>No saved hashtag sets yet. Create your first set!</p></div>';
+    }
+  })
+  .catch(error => {
+    console.error('Error loading hashtag sets:', error);
+  });
+}
+
+function saveHashtagSet() {
+  const form = document.getElementById('saveHashtagSetForm');
+  const formData = new FormData(form);
+
+  fetch('/admin/social_media/hashtags/save_hashtag_set', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      bootstrap.Modal.getInstance(document.getElementById('saveHashtagSetModal')).hide();
+      loadHashtagSets();
+      clearCurrentSet();
+      alert('Hashtag set saved successfully!');
+    } else {
+      alert('Error saving hashtag set: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error saving hashtag set:', error);
+    alert('Error saving hashtag set');
+  });
+}
+
+function loadNicheTrending() {
+  fetch('/admin/social_media/hashtags/trending_analysis', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const container = document.getElementById('nicheTrending');
+
+    if (data.niche_trending && data.niche_trending.length > 0) {
+      container.innerHTML = '<div class="hashtag-cloud"></div>';
+      const cloud = container.querySelector('.hashtag-cloud');
+
+      data.niche_trending.forEach(hashtag => {
+        const span = document.createElement('span');
+        span.className = 'badge bg-info me-2 mb-2';
+        span.style.cursor = 'pointer';
+        span.textContent = '#' + hashtag;
+        span.onclick = () => addToCurrentSet('#' + hashtag);
+        cloud.appendChild(span);
+      });
+    } else {
+      container.innerHTML = '<div class="alert alert-info">No industry-specific trends available</div>';
+    }
+  })
+  .catch(error => {
+    console.error('Error loading niche trends:', error);
+  });
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+</script>

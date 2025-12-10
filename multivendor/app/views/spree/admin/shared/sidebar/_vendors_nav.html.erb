@@ -1,6 +1,6 @@
 <% if can?(:manage, current_store) %>
-  <li class="nav-item">
-    <%= link_to "/admin/vendors", class: "nav-link d-flex align-items-center w-100 #{'active' if controller_name == 'vendors'}" do %>
+  <li class="nav-item" role="presentation">
+    <%= link_to spree.admin_vendors_path, class: "nav-link #{'active' if controller_name == 'vendors'}" do %>
       <%= icon 'heart-handshake' %>
       <%= Spree.t(:vendors) %>
 
@@ -12,4 +12,12 @@
       <% end %>
     <% end %>
   </li>
+
+  <ul class="nav-submenu d-none">
+    <li class="nav-item" role="presentation">
+      <%= link_to spree.admin_social_media_path, class: "nav-link #{'active' if controller_name.start_with?('social_media')}" do %>
+        <%= Spree.t('admin.social_media.nav_label', default: 'Social Media') %>
+      <% end %>
+    </li>
+  </ul>
 <% end %>

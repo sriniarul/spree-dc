@@ -1,0 +1,267 @@
+<% content_for :page_title do %>
+  Post <%= pluralize(@products.count, 'Product') %> to Social Media
+<% end %>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">Bulk Post to Social Media</h4>
+        <%= link_to "Back to Products", spree.admin_products_path, class: "btn btn-outline-secondary btn-sm" %>
+      </div>
+
+      <div class="card-body">
+        <%= form_with url: spree.bulk_create_admin_social_media_product_posts_path,
+                     method: :post,
+                     local: true do |f| %>
+
+          <%= hidden_field_tag :product_ids, @products.pluck(:id).join(',') %>
+
+          <!-- Selected Products Preview -->
+          <div class="mb-4">
+            <h5>Selected Products (<%= @products.count %>)</h5>
+            <div class="row">
+              <% @products.first(6).each do |product| %>
+                <div class="col-md-2 mb-3">
+                  <div class="card">
+                    <% if product.images.any? %>
+                      <%= image_tag main_app.url_for(product.images.first.attachment),
+                                   class: 'card-img-top',
+                                   style: 'height: 100px; object-fit: cover;' %>
+                    <% else %>
+                      <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                           style="height: 100px;">
+                        <i class="fa fa-image"></i>
+                      </div>
+                    <% end %>
+                    <div class="card-body p-2">
+                      <small class="d-block text-truncate"><%= product.name %></small>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+              <% if @products.count > 6 %>
+                <div class="col-md-2 mb-3">
+                  <div class="card">
+                    <div class="card-body d-flex align-items-center justify-content-center"
+                         style="height: 100px;">
+                      <div class="text-center">
+                        <div class="h4">+<%= @products.count - 6 %></div>
+                        <small>more</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Platform Selection -->
+          <div class="form-group">
+            <%= label_tag :social_media_account_id, "Select Platform", class: "form-label" %>
+            <%= select_tag :social_media_account_id,
+                options_from_collection_for_select(@social_media_accounts, :id, :display_name_with_platform),
+                class: "form-select",
+                required: true,
+                include_blank: "Choose platform..." %>
+            <small class="form-text text-muted">
+              All products will be posted to this platform
+            </small>
+          </div>
+
+          <!-- Content Type -->
+          <div class="form-group">
+            <%= label_tag :content_type, "Content Type", class: "form-label" %>
+            <%= select_tag :content_type,
+                options_for_select([
+                  ['Feed Post', 'feed'],
+                  ['Story', 'story']
+                ], 'feed'),
+                class: "form-select",
+                required: true %>
+            <small class="form-text text-muted">
+              Choose how to post these products
+            </small>
+          </div>
+
+          <!-- Caption Template -->
+          <div class="form-group">
+            <label class="form-label">Caption Template</label>
+            <div class="form-check">
+              <%= radio_button_tag :caption_mode, 'auto', true,
+                  class: "form-check-input",
+                  id: 'caption_auto' %>
+              <label class="form-check-label" for="caption_auto">
+                Auto-generate from product details
+              </label>
+            </div>
+            <div class="form-check">
+              <%= radio_button_tag :caption_mode, 'custom', false,
+                  class: "form-check-input",
+                  id: 'caption_custom' %>
+              <label class="form-check-label" for="caption_custom">
+                Use custom template
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group" id="custom-caption-section" style="display: none;">
+            <%= label_tag :caption_template, "Caption Template", class: "form-label" %>
+            <%= text_area_tag :caption_template, '',
+                class: "form-control",
+                rows: 4,
+                placeholder: "Use {product_name}, {price}, {description} as placeholders" %>
+            <small class="form-text text-muted">
+              Template will be applied to all products. Use placeholders for dynamic content.
+            </small>
+          </div>
+
+          <!-- Hashtags -->
+          <div class="form-group">
+            <%= label_tag :hashtags, "Hashtags (same for all posts)", class: "form-label" %>
+            <%= text_field_tag :hashtags, '',
+                class: "form-control",
+                placeholder: "#fashion #shopping #newcollection" %>
+            <small class="form-text text-muted">
+              These hashtags will be added to all posts
+            </small>
+          </div>
+
+          <!-- Publishing Options -->
+          <div class="form-group">
+            <label class="form-label">Publishing Options</label>
+            <div class="form-check">
+              <%= radio_button_tag :publish_option, 'now', true,
+                  class: "form-check-input",
+                  id: 'publish_now' %>
+              <label class="form-check-label" for="publish_now">
+                Publish All Now
+              </label>
+            </div>
+            <div class="form-check">
+              <%= radio_button_tag :publish_option, 'schedule', false,
+                  class: "form-check-input",
+                  id: 'schedule_later' %>
+              <label class="form-check-label" for="schedule_later">
+                Schedule All
+              </label>
+            </div>
+            <div class="form-check">
+              <%= radio_button_tag :publish_option, 'stagger', false,
+                  class: "form-check-input",
+                  id: 'stagger_posts' %>
+              <label class="form-check-label" for="stagger_posts">
+                Stagger Posts (recommended)
+              </label>
+            </div>
+          </div>
+
+          <!-- Schedule Date/Time -->
+          <div class="form-group" id="schedule-section" style="display: none;">
+            <%= label_tag :scheduled_at, "Schedule Date & Time", class: "form-label" %>
+            <%= datetime_local_field_tag :scheduled_at, nil, class: "form-control" %>
+            <small class="form-text text-muted">
+              All posts will be published at this time
+            </small>
+          </div>
+
+          <!-- Stagger Options -->
+          <div class="form-group" id="stagger-section" style="display: none;">
+            <div class="row">
+              <div class="col-md-6">
+                <%= label_tag :stagger_start, "Start Time", class: "form-label" %>
+                <%= datetime_local_field_tag :stagger_start, nil, class: "form-control" %>
+              </div>
+              <div class="col-md-6">
+                <%= label_tag :stagger_interval, "Interval (hours)", class: "form-label" %>
+                <%= number_field_tag :stagger_interval, 2,
+                    min: 1, max: 24, class: "form-control" %>
+              </div>
+            </div>
+            <small class="form-text text-muted">
+              Posts will be published <%= @products.count %> times with specified interval
+            </small>
+          </div>
+
+          <!-- Warning -->
+          <div class="alert alert-info mt-3">
+            <i class="fa fa-info-circle"></i>
+            <strong>Note:</strong> Posting <%= @products.count %> products at once may take some time.
+            You'll be notified when all posts are complete.
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-group mt-4">
+            <%= hidden_field_tag :publish_now, 'true', id: 'publish_now_input' %>
+            <%= submit_tag "Publish All Now", class: "btn btn-primary", id: "submit-btn",
+                data: { confirm: "Are you sure you want to post #{@products.count} products?" } %>
+            <%= link_to "Cancel", spree.admin_products_path, class: "btn btn-outline-secondary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Caption mode toggle
+  const captionAuto = document.getElementById('caption_auto');
+  const captionCustom = document.getElementById('caption_custom');
+  const customCaptionSection = document.getElementById('custom-caption-section');
+
+  if (captionCustom) {
+    captionCustom.addEventListener('change', function() {
+      if (this.checked) {
+        customCaptionSection.style.display = 'block';
+      }
+    });
+
+    captionAuto.addEventListener('change', function() {
+      if (this.checked) {
+        customCaptionSection.style.display = 'none';
+      }
+    });
+  }
+
+  // Publishing options
+  const publishNow = document.getElementById('publish_now');
+  const scheduleLater = document.getElementById('schedule_later');
+  const staggerPosts = document.getElementById('stagger_posts');
+  const scheduleSection = document.getElementById('schedule-section');
+  const staggerSection = document.getElementById('stagger-section');
+  const publishNowInput = document.getElementById('publish_now_input');
+  const submitBtn = document.getElementById('submit-btn');
+
+  if (publishNow && scheduleLater && staggerPosts) {
+    publishNow.addEventListener('change', function() {
+      if (this.checked) {
+        scheduleSection.style.display = 'none';
+        staggerSection.style.display = 'none';
+        publishNowInput.value = 'true';
+        submitBtn.value = 'Publish All Now';
+      }
+    });
+
+    scheduleLater.addEventListener('change', function() {
+      if (this.checked) {
+        scheduleSection.style.display = 'block';
+        staggerSection.style.display = 'none';
+        publishNowInput.value = 'false';
+        submitBtn.value = 'Schedule All Posts';
+      }
+    });
+
+    staggerPosts.addEventListener('change', function() {
+      if (this.checked) {
+        scheduleSection.style.display = 'none';
+        staggerSection.style.display = 'block';
+        publishNowInput.value = 'stagger';
+        submitBtn.value = 'Schedule Staggered Posts';
+      }
+    });
+  }
+});
+</script>

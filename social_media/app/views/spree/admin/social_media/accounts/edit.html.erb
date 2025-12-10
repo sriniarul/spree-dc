@@ -1,0 +1,60 @@
+<% content_for :page_title do %>
+  Edit <%= @account.display_name %> - <%= @account.platform.humanize %>
+<% end %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center">
+    <%= link_to spree.admin_social_media_account_path(@account), class: 'btn btn-outline-secondary me-3' do %>
+      <%= icon 'arrow-left' %>
+    <% end %>
+    <div>
+      <h1 class="h3 mb-1 d-flex align-items-center">
+        <%= icon "brand-#{@account.platform}", class: 'me-2', size: '2rem' %>
+        Edit <%= @account.display_name %>
+      </h1>
+      <p class="text-muted mb-0">
+        Update settings for your <%= @account.platform.humanize %> account
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <%= render 'spree/admin/shared/edit_resource' %>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Account Status</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <span class="badge badge-<%= @account.status == 'active' ? 'success' : @account.status == 'error' ? 'danger' : 'warning' %> fs-6">
+            <%= @account.status.humanize %>
+          </span>
+        </div>
+        <% if @account.last_error.present? %>
+          <div class="alert alert-danger small">
+            <strong>Last Error:</strong><br>
+            <%= @account.last_error %>
+          </div>
+        <% end %>
+        <div class="d-grid gap-2">
+          <%= link_to spree.test_connection_admin_social_media_account_path(@account),
+                      method: :post, class: 'btn btn-outline-success btn-sm' do %>
+            <%= icon 'refresh', size: '1rem' %>
+            Test Connection
+          <% end %>
+          <%= link_to spree.sync_analytics_admin_social_media_account_path(@account),
+                      method: :post, class: 'btn btn-outline-primary btn-sm' do %>
+            <%= icon 'chart-bar', size: '1rem' %>
+            Sync Analytics
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= render 'form' %>

@@ -46,4 +46,15 @@
       <% end %>
     </li>
   </ul>
+
+  <!-- Marketing -->
+  <li class="nav-item">
+    <%= link_to spree.admin_social_media_path, class: "nav-link d-flex align-items-center w-100 #{'active' if controller_name.start_with?('social_media')}" do %>
+      <%= icon 'brand-facebook' %>
+      Marketing
+    <% end %>
+  </li>
 </ul>
+
+
+

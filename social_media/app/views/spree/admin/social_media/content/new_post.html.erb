@@ -1,0 +1,384 @@
+<% content_for :page_title do %>
+  Create Social Media Post
+<% end %>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">Create Post</h4>
+        <div class="btn-group" role="group">
+          <%= link_to "Back to Content", spree.admin_social_media_path, class: "btn btn-outline-secondary btn-sm" %>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <%= form_with(model: [:admin, @post], local: true, url: spree.create_post_admin_social_media_content_index_path, multipart: true) do |f| %>
+          <% if @post.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>Please fix the following errors:</h6>
+              <ul class="mb-0">
+                <% @post.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <!-- Account Selection -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <%= f.label :social_media_account_id, "Platform Account", class: "form-label" %>
+                <select name="social_media_account_id" class="form-select" required>
+                  <option value="">Select Platform</option>
+                  <% @social_media_accounts.each do |account| %>
+                    <option value="<%= account.id %>" data-platform="<%= account.platform %>">
+                      <%= account.platform.humanize %> - @<%= account.username %>
+                    </option>
+                  <% end %>
+                </select>
+              </div>
+            </div>
+
+            <!-- Content Type -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <%= f.label :content_type, "Content Type", class: "form-label" %>
+                <%= f.select :content_type,
+                    options_for_select([
+                      ['Feed Post', 'feed'],
+                      ['Story', 'story'],
+                      ['Reel', 'reel']
+                    ]),
+                    { prompt: 'Select Content Type' },
+                    { class: "form-select", required: true } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Caption/Content -->
+          <div class="form-group">
+            <%= f.label :caption, "Caption", class: "form-label" %>
+            <%= f.text_area :caption, class: "form-control", rows: 4,
+                placeholder: "Write your post caption...", required: true %>
+            <small class="form-text text-muted">
+              <span id="caption-counter">0</span> characters
+            </small>
+          </div>
+
+          <!-- Media Upload -->
+          <div class="form-group">
+            <label class="form-label">Media Files</label>
+            <div class="border rounded p-3">
+              <input type="file" name="media_files[]" multiple accept="image/*,video/*"
+                     class="form-control mb-2" id="media-files">
+              <small class="form-text text-muted">
+                Upload images or videos. Instagram supports JPG, PNG, MP4, MOV files.
+                <br>For carousel posts, you can upload multiple images.
+              </small>
+
+              <!-- Media Preview -->
+              <div id="media-preview" class="row mt-3" style="display: none;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Hashtags -->
+          <div class="form-group">
+            <%= f.label :hashtags, "Hashtags", class: "form-label" %>
+            <%= f.text_field :hashtags, class: "form-control",
+                placeholder: "#socialmedia #marketing #business" %>
+            <small class="form-text text-muted">
+              Separate hashtags with spaces. Max 30 hashtags for Instagram.
+            </small>
+          </div>
+
+          <!-- Product Mentions -->
+          <div class="form-group" id="product-mentions-section" style="display: none;">
+            <%= f.label :product_mentions, "Product Tags", class: "form-label" %>
+            <%= f.text_area :product_mentions, class: "form-control", rows: 2,
+                placeholder: "Tag products in your post (JSON format)" %>
+            <small class="form-text text-muted">
+              Tag products to enable shopping features (Instagram Business accounts only).
+            </small>
+          </div>
+
+          <!-- Scheduling Options -->
+          <div class="form-group">
+            <label class="form-label">Publishing Options</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="publish_option"
+                     id="publish_now" value="now" checked>
+              <label class="form-check-label" for="publish_now">
+                Publish Now
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="publish_option"
+                     id="schedule_later" value="schedule">
+              <label class="form-check-label" for="schedule_later">
+                Schedule for Later
+              </label>
+            </div>
+          </div>
+
+          <!-- Schedule Date/Time -->
+          <div class="form-group" id="schedule-section" style="display: none;">
+            <%= f.label :scheduled_at, "Schedule Date & Time", class: "form-label" %>
+            <%= f.datetime_local_field :scheduled_at, class: "form-control" %>
+            <small class="form-text text-muted">
+              Posts will be published automatically at the scheduled time.
+            </small>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-group mt-4">
+            <div class="btn-group">
+              <%= f.submit "Create Post", class: "btn btn-primary", id: "submit-btn" %>
+              <input type="hidden" name="publish_now" id="publish_now_input" value="false">
+              <%= link_to "Cancel", spree.admin_social_media_path,
+                  class: "btn btn-outline-secondary" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Panel -->
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Post Preview</h5>
+      </div>
+      <div class="card-body">
+        <div id="post-preview">
+          <div class="text-muted text-center py-4">
+            <i class="fas fa-eye fa-2x mb-2"></i>
+            <p>Select platform and add content to preview your post</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Platform Guidelines -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6 class="card-title mb-0">Platform Guidelines</h6>
+      </div>
+      <div class="card-body">
+        <div id="platform-guidelines">
+          <div class="platform-guide" data-platform="instagram" style="display: none;">
+            <h6 class="text-primary">Instagram Guidelines</h6>
+            <ul class="small">
+              <li><strong>Feed Posts:</strong> Square (1080x1080) or vertical (1080x1350)</li>
+              <li><strong>Stories:</strong> Vertical (1080x1920)</li>
+              <li><strong>Reels:</strong> Vertical videos (1080x1920), 15-90 seconds</li>
+              <li><strong>Hashtags:</strong> Max 30, use relevant tags</li>
+              <li><strong>Caption:</strong> Max 2,200 characters</li>
+            </ul>
+          </div>
+          <div class="platform-guide" data-platform="facebook" style="display: none;">
+            <h6 class="text-primary">Facebook Guidelines</h6>
+            <ul class="small">
+              <li><strong>Images:</strong> Minimum 720px width</li>
+              <li><strong>Videos:</strong> MP4, MOV, or AVI format</li>
+              <li><strong>Text:</strong> Keep overlay text minimal for better reach</li>
+              <li><strong>Aspect Ratio:</strong> 16:9, 1:1, or 4:5 recommended</li>
+            </ul>
+          </div>
+          <div class="platform-guide" data-platform="youtube" style="display: none;">
+            <h6 class="text-primary">YouTube Guidelines</h6>
+            <ul class="small">
+              <li><strong>Thumbnails:</strong> 1280x720px minimum</li>
+              <li><strong>Title:</strong> Max 100 characters</li>
+              <li><strong>Description:</strong> Max 5,000 characters</li>
+              <li><strong>Tags:</strong> Relevant keywords for discovery</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for dynamic functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Character counter
+  const captionField = document.querySelector('#spree_social_media_post_caption');
+  const captionCounter = document.getElementById('caption-counter');
+
+  if (captionField && captionCounter) {
+    captionField.addEventListener('input', function() {
+      captionCounter.textContent = this.value.length;
+    });
+  }
+
+  // Platform selection
+  const accountSelect = document.querySelector('select[name="social_media_account_id"]');
+  const platformGuides = document.querySelectorAll('.platform-guide');
+
+  if (accountSelect) {
+    accountSelect.addEventListener('change', function() {
+      const selectedPlatform = this.selectedOptions[0]?.dataset.platform;
+
+      platformGuides.forEach(guide => {
+        guide.style.display = guide.dataset.platform === selectedPlatform ? 'block' : 'none';
+      });
+
+      updatePostPreview();
+    });
+  }
+
+  // Scheduling options
+  const publishNow = document.getElementById('publish_now');
+  const scheduleLater = document.getElementById('schedule_later');
+  const scheduleSection = document.getElementById('schedule-section');
+  const publishNowInput = document.getElementById('publish_now_input');
+  const submitBtn = document.getElementById('submit-btn');
+
+  if (publishNow && scheduleLater && scheduleSection) {
+    publishNow.addEventListener('change', function() {
+      if (this.checked) {
+        scheduleSection.style.display = 'none';
+        publishNowInput.value = 'true';
+        submitBtn.textContent = 'Publish Now';
+      }
+    });
+
+    scheduleLater.addEventListener('change', function() {
+      if (this.checked) {
+        scheduleSection.style.display = 'block';
+        publishNowInput.value = 'false';
+        submitBtn.textContent = 'Schedule Post';
+      }
+    });
+  }
+
+  // Media file preview
+  const mediaFiles = document.getElementById('media-files');
+  const mediaPreview = document.getElementById('media-preview');
+
+  if (mediaFiles && mediaPreview) {
+    mediaFiles.addEventListener('change', function() {
+      const files = Array.from(this.files);
+      mediaPreview.innerHTML = '';
+
+      if (files.length > 0) {
+        mediaPreview.style.display = 'block';
+
+        files.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const mediaElement = file.type.startsWith('image/')
+              ? `<img src="${e.target.result}" class="img-thumbnail" style="max-height: 100px;">`
+              : `<video src="${e.target.result}" class="img-thumbnail" style="max-height: 100px;" controls></video>`;
+
+            const mediaContainer = document.createElement('div');
+            mediaContainer.className = 'col-6 col-md-4 mb-2';
+            mediaContainer.innerHTML = `
+              <div class="position-relative">
+                ${mediaElement}
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                        onclick="removeMediaPreview(this, ${index})">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            `;
+
+            mediaPreview.appendChild(mediaContainer);
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        mediaPreview.style.display = 'none';
+      }
+
+      updatePostPreview();
+    });
+  }
+
+  // Update post preview
+  function updatePostPreview() {
+    const previewContainer = document.getElementById('post-preview');
+    const selectedAccount = accountSelect?.selectedOptions[0];
+    const caption = captionField?.value || '';
+    const hashtags = document.querySelector('#spree_social_media_post_hashtags')?.value || '';
+
+    if (selectedAccount && caption) {
+      const platform = selectedAccount.dataset.platform;
+      const username = selectedAccount.textContent.split(' - @')[1];
+
+      previewContainer.innerHTML = `
+        <div class="border rounded p-3">
+          <div class="d-flex align-items-center mb-2">
+            <div class="badge badge-primary me-2">${platform}</div>
+            <strong>@${username}</strong>
+          </div>
+          <div class="mb-2">
+            <div class="media-preview-placeholder bg-light rounded text-center py-3">
+              <i class="fas fa-image fa-2x text-muted"></i>
+              <div class="small text-muted">Media will appear here</div>
+            </div>
+          </div>
+          <div class="small">
+            <div class="mb-1">${caption.replace(/\n/g, '<br>')}</div>
+            ${hashtags ? `<div class="text-primary">${hashtags}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Auto-update preview when content changes
+  [captionField, document.querySelector('#spree_social_media_post_hashtags')].forEach(field => {
+    if (field) {
+      field.addEventListener('input', updatePostPreview);
+    }
+  });
+});
+
+// Remove media preview function
+function removeMediaPreview(button, index) {
+  const mediaFiles = document.getElementById('media-files');
+  const dt = new DataTransfer();
+  const files = Array.from(mediaFiles.files);
+
+  files.forEach((file, i) => {
+    if (i !== index) {
+      dt.items.add(file);
+    }
+  });
+
+  mediaFiles.files = dt.files;
+  button.closest('.col-6').remove();
+}
+</script>
+
+<style>
+.media-preview-placeholder {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.platform-guide ul {
+  padding-left: 1rem;
+  margin-bottom: 0;
+}
+
+.badge {
+  font-size: 0.7rem;
+}
+
+#media-preview img,
+#media-preview video {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+</style>

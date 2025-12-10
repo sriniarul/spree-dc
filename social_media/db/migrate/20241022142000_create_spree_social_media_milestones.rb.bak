@@ -1,0 +1,22 @@
+class CreateSpreeSocialMediaMilestones < ActiveRecord::Migration[7.0]
+  def change
+    create_table :spree_social_media_milestones do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }
+      t.references :social_media_post, null: true, foreign_key: { to_table: :spree_social_media_posts }
+
+      t.string :milestone_type, null: false
+      t.string :message, null: false
+      t.text :metrics_data
+
+      t.datetime :achieved_at, null: false
+      t.timestamps
+    end
+
+    add_index :spree_social_media_milestones, :milestone_type
+    add_index :spree_social_media_milestones, :achieved_at
+    add_index :spree_social_media_milestones, [:social_media_account_id, :milestone_type],
+              name: 'index_milestones_on_account_and_type'
+    add_index :spree_social_media_milestones, [:social_media_post_id, :milestone_type],
+              unique: true, name: 'index_milestones_uniqueness'
+  end
+end

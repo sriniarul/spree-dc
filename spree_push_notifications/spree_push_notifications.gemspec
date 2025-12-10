@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.requirements << 'none'
 
-  s.add_dependency 'spree', '>= 4.2'
+  s.add_dependency 'spree', '5.2.2'
   s.add_dependency 'webpush'
 
   s.add_development_dependency 'rspec-rails'

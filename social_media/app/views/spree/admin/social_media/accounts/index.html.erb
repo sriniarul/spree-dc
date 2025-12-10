@@ -1,0 +1,168 @@
+<% content_for :page_title do %>
+  <%= Spree.t('admin.social_media.accounts.title', default: 'Social Media Accounts') %>
+<% end %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1"><%= Spree.t('admin.social_media.accounts.title', default: 'Social Media Accounts') %></h1>
+    <p class="text-muted mb-0">
+      <%= Spree.t('admin.social_media.accounts.subtitle', default: 'Connect and manage your social media accounts') %>
+    </p>
+  </div>
+  <div class="btn-group">
+    <% if @accounts.any? %>
+      <%= link_to spree.new_post_admin_social_media_content_index_path, class: 'btn btn-success' do %>
+        <%= icon 'plus' %>
+        Create Post
+      <% end %>
+    <% end %>
+
+    <div class="dropdown">
+      <button class="btn btn-primary dropdown-toggle" type="button" id="connectAccountDropdown" data-bs-toggle="dropdown">
+        <%= icon 'plus' %>
+        Connect Account
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="connectAccountDropdown">
+        <% %w[facebook instagram youtube tiktok whatsapp].each do |platform| %>
+          <li>
+            <%= link_to spree.new_admin_social_media_account_path(platform: platform), class: 'dropdown-item', data: { turbo: false } do %>
+              <%= icon "brand-#{platform}", class: 'me-2' %>
+              <%= platform.humanize %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<% if @accounts.any? %>
+  <div class="row">
+    <% @accounts.each do |account| %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="flex-shrink-0">
+                <%= icon "brand-#{account.platform}", size: '2rem', class: 'text-primary' %>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h5 class="card-title mb-1"><%= account.display_name %></h5>
+                <p class="card-text text-muted small mb-0">
+                  <%= account.platform.humanize %>
+                  <% if account.username.present? %>
+                    • @<%= account.username %>
+                  <% end %>
+                </p>
+              </div>
+              <div class="flex-shrink-0">
+                <span class="badge badge-<%= account.status == 'active' ? 'success' : account.status == 'error' ? 'danger' : 'warning' %>">
+                  <%= account.status.humanize %>
+                </span>
+              </div>
+            </div>
+
+            <div class="row text-center mb-3">
+              <div class="col-4">
+                <div class="h6 mb-0"><%= account.total_followers %></div>
+                <small class="text-muted">Followers</small>
+              </div>
+              <div class="col-4">
+                <div class="h6 mb-0"><%= account.social_media_posts.count %></div>
+                <small class="text-muted">Posts</small>
+              </div>
+              <div class="col-4">
+                <div class="h6 mb-0"><%= account.engagement_rate %>%</div>
+                <small class="text-muted">Engagement</small>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <%= link_to spree.admin_social_media_account_path(account),
+                          class: 'btn btn-sm btn-outline-primary flex-fill' do %>
+                <%= icon 'eye', size: '1rem' %>
+                View
+              <% end %>
+
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                        type="button" data-bs-toggle="dropdown">
+                  <%= icon 'dots-vertical', size: '1rem' %>
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <%= link_to spree.edit_admin_social_media_account_path(account),
+                                class: 'dropdown-item' do %>
+                      <%= icon 'edit', size: '1rem', class: 'me-2' %>
+                      Edit
+                    <% end %>
+                  </li>
+                  <li>
+                    <%= link_to spree.test_connection_admin_social_media_account_path(account),
+                                method: :post, class: 'dropdown-item' do %>
+                      <%= icon 'refresh', size: '1rem', class: 'me-2' %>
+                      Test Connection
+                    <% end %>
+                  </li>
+                  <li>
+                    <%= link_to spree.sync_analytics_admin_social_media_account_path(account),
+                                method: :post, class: 'dropdown-item' do %>
+                      <%= icon 'chart-bar', size: '1rem', class: 'me-2' %>
+                      Sync Analytics
+                    <% end %>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <%= link_to spree.admin_social_media_account_path(account),
+                                method: :delete,
+                                class: 'dropdown-item text-danger',
+                                confirm: Spree.t('admin.social_media.accounts.confirm_disconnect',
+                                               account: account.display_name) do %>
+                      <%= icon 'unlink', size: '1rem', class: 'me-2' %>
+                      Disconnect
+                    <% end %>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="text-center py-5">
+    <div class="mb-4">
+      <%= icon 'brand-facebook', size: '4rem', class: 'text-muted' %>
+    </div>
+    <h4 class="text-muted mb-3">No social media accounts connected</h4>
+    <p class="text-muted mb-4">
+      Connect your social media accounts to start posting and managing your content from one place.
+    </p>
+
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="d-grid gap-2">
+          <% %w[facebook instagram youtube tiktok whatsapp].each do |platform| %>
+            <%= link_to spree.new_admin_social_media_account_path(platform: platform),
+                        class: "btn btn-outline-primary d-flex align-items-center justify-content-center",
+                        data: { turbo: false } do %>
+              <%= icon "brand-#{platform}", class: 'me-2' %>
+              Connect <%= platform.humanize %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if params[:platform].present? %>
+  <div class="mt-4">
+    <%= link_to spree.admin_social_media_accounts_path,
+                class: 'btn btn-outline-secondary' do %>
+      <%= icon 'arrow-left', class: 'me-2' %>
+      Show All Platforms
+    <% end %>
+  </div>
+<% end %>

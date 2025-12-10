@@ -1,0 +1,173 @@
+en:
+  spree:
+    social_media: "Social Media"
+    social_media_dashboard: "Social Media Dashboard"
+    connect_account: "Connect Account"
+    create_new_post: "Create New Post"
+    schedule_content: "Schedule Content"
+    view_analytics: "View Analytics"
+    manage_accounts: "Manage Accounts"
+    campaigns: "Campaigns"
+
+    admin:
+      social_media:
+        title: "Social Media Integration"
+        dashboard: "Social Media Dashboard"
+        accounts: "Social Media Accounts"
+        posts: "Social Media Posts"
+        campaigns: "Marketing Campaigns"
+        analytics: "Social Media Analytics"
+
+        # Account management
+        connect_account: "Connect %{platform} Account"
+        disconnect_account: "Disconnect %{platform} Account"
+        account_connected: "%{platform} account connected successfully"
+        account_disconnected: "%{platform} account disconnected successfully"
+        account_not_found: "Social media account not found"
+        account_not_active: "Account is not active"
+
+        # Accounts page
+        accounts:
+          title: "Social Media Accounts"
+          subtitle: "Connect and manage your social media accounts"
+          confirm_disconnect: "Are you sure you want to disconnect %{account}?"
+          no_accounts_title: "No social media accounts connected"
+          no_accounts_subtitle: "Connect your social media accounts to start posting and managing your content from one place."
+
+        # Connection status
+        connection_test_success: "Connection test successful"
+        connection_test_failed: "Connection test failed: %{error}"
+        analytics_sync_scheduled: "Analytics sync scheduled successfully"
+
+        # Posts
+        post_scheduled: "Post scheduled successfully"
+        post_cancelled: "Post cancelled successfully"
+        post_published: "Post published successfully"
+        post_failed: "Failed to publish post: %{error}"
+
+        # Campaigns
+        campaign_created: "Campaign created successfully"
+        campaign_activated: "Campaign activated successfully"
+        campaign_paused: "Campaign paused successfully"
+
+        # Platform names
+        platforms:
+          facebook: "Facebook"
+          instagram: "Instagram"
+          whatsapp: "WhatsApp Business"
+          youtube: "YouTube"
+          tiktok: "TikTok"
+
+        # Status labels
+        statuses:
+          active: "Active"
+          inactive: "Inactive"
+          error: "Error"
+          pending_approval: "Pending Approval"
+
+        # Post statuses
+        post_statuses:
+          draft: "Draft"
+          scheduled: "Scheduled"
+          posted: "Posted"
+          failed: "Failed"
+          cancelled: "Cancelled"
+
+        # Analytics
+        analytics:
+          impressions: "Impressions"
+          likes: "Likes"
+          comments: "Comments"
+          shares: "Shares"
+          clicks: "Clicks"
+          engagement_rate: "Engagement Rate"
+          reach: "Reach"
+          followers: "Followers"
+
+        # Form labels
+        forms:
+          content: "Post Content"
+          schedule_at: "Schedule At"
+          platforms: "Select Platforms"
+          media_files: "Media Files"
+          hashtags: "Hashtags"
+          auto_post: "Enable Auto-posting"
+          analytics_enabled: "Enable Analytics Collection"
+
+        # Buttons
+        buttons:
+          connect: "Connect"
+          disconnect: "Disconnect"
+          test_connection: "Test Connection"
+          sync_analytics: "Sync Analytics"
+          schedule_post: "Schedule Post"
+          post_now: "Post Now"
+          cancel_post: "Cancel Post"
+          create_campaign: "Create Campaign"
+          bulk_actions: "Bulk Actions"
+
+        # Product posting
+        bulk_post_to_social_media: "Post to Social Media"
+        post_product: "Post to Social Media"
+        no_images: "This product has no images"
+
+        # Messages
+        messages:
+          no_accounts_connected: "No social media accounts connected yet. Connect your first account to get started."
+          no_posts_scheduled: "No posts scheduled. Create your first social media post."
+          analytics_unavailable: "Analytics data is not available for this account."
+          connection_required: "Please connect your social media accounts first."
+
+        # Errors
+        errors:
+          invalid_platform: "Invalid social media platform"
+          token_expired: "Access token has expired. Please reconnect your account."
+          api_rate_limit: "API rate limit exceeded. Please try again later."
+          insufficient_permissions: "Insufficient permissions for this action"
+          network_error: "Network error occurred. Please check your connection."
+
+    # Navigation
+    admin_menu:
+      marketing: "Marketing"
+      social_media: "Social Media"
+
+    # API responses
+    api:
+      social_media:
+        account_created: "Social media account created successfully"
+        account_updated: "Social media account updated successfully"
+        account_deleted: "Social media account deleted successfully"
+        post_created: "Social media post created successfully"
+        post_updated: "Social media post updated successfully"
+        post_deleted: "Social media post deleted successfully"
+        post_scheduled: "Post scheduled successfully"
+        post_published: "Post published successfully"
+
+    # OAuth
+    oauth:
+      facebook:
+        connect_success: "Facebook account connected successfully"
+        connect_error: "Failed to connect Facebook account"
+        permissions_required: "Please grant all required permissions"
+
+      instagram:
+        connect_success: "Instagram account connected successfully"
+        connect_error: "Failed to connect Instagram account"
+        business_account_required: "Instagram Business account is required"
+
+      youtube:
+        connect_success: "YouTube channel connected successfully"
+        connect_error: "Failed to connect YouTube channel"
+        upload_permission_required: "YouTube upload permission is required"
+
+      tiktok:
+        connect_success: "TikTok account connected successfully"
+        connect_error: "Failed to connect TikTok account"
+        business_account_required: "TikTok Business account is required"
+        pending_approval: "TikTok connection is pending approval"
+
+      whatsapp:
+        connect_success: "WhatsApp Business account connected successfully"
+        connect_error: "Failed to connect WhatsApp Business account"
+        business_api_required: "WhatsApp Business API access is required"
+        phone_verification_required: "Phone number verification is required"

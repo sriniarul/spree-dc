@@ -11,8 +11,7 @@
       "Bash(bundle exec rails:*)",
       "Bash(curl:*)",
       "Bash(bundle exec rake:*)",
-      "Bash(bin/importmap:*)",
-      "Bash(ruby -c:*)"
+      "Bash(bin/importmap:*)"
     ],
     "deny": []
   }

@@ -1,0 +1,3 @@
+<% if respond_to?(:current_vendor) && current_vendor&.approved? %>
+  <%= nav_item(Spree.t('admin.social_media.nav_label', default: 'Marketing'), spree.admin_social_media_index_path, icon: 'brand-facebook') %>
+<% end %>

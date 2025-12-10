@@ -88,6 +88,7 @@ module Spree
     before_validation :normalize_business_fields
     before_validation :set_default_state, on: :create
     before_validation :set_display_name_from_business_info
+    before_validation :generate_slug
 
     # State machine methods
     def approve!
@@ -241,6 +242,28 @@ module Spree
       if name.blank?
         candidate_name = trade_name.presence || legal_name.presence
         self.name = candidate_name if candidate_name.present?
+      end
+    end
+
+    def generate_slug
+      if name.present?
+        base_slug = name.parameterize
+        # Ensure slug is unique
+        existing_slugs = self.class.where(slug: base_slug)
+        existing_slugs = existing_slugs.where.not(id: id) if persisted?
+
+        if existing_slugs.exists?
+          counter = 1
+          while self.class.where(slug: "#{base_slug}-#{counter}").exists?
+            counter += 1
+          end
+          self.slug = "#{base_slug}-#{counter}"
+        else
+          self.slug = base_slug
+        end
+      elsif slug.blank?
+        # Fallback if name is not available
+        self.slug = "vendor-#{Time.current.to_i}"
       end
     end
   end

@@ -1,0 +1,46 @@
+class CreateSpreeSocialMediaMentions < ActiveRecord::Migration[7.2]
+  def change
+    create_table :spree_social_media_mentions do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }
+      t.string :platform_mention_id, null: false
+      t.string :platform_post_id, null: false
+      t.text :caption, null: false
+      t.string :media_type
+      t.string :media_url
+      t.string :from_user_id, null: false
+      t.string :from_user_username, null: false
+      t.integer :from_user_followers_count
+      t.json :from_user_data
+      t.integer :likes_count, default: 0
+      t.integer :comments_count, default: 0
+      t.integer :shares_count, default: 0
+      t.string :influence_level, default: 'regular'
+      t.boolean :is_influencer, default: false
+      t.string :sentiment_label
+      t.float :sentiment_score
+      t.json :mentioned_products
+      t.boolean :contains_product_mention, default: false
+      t.string :mention_context
+      t.json :context_data
+      t.json :response_suggestions
+      t.boolean :requires_response, default: false
+      t.boolean :notification_worthy, default: false
+      t.string :status, default: 'pending'
+      t.text :error_message
+      t.datetime :notification_sent_at
+      t.datetime :processed_at
+      t.datetime :mentioned_at, null: false
+      t.json :mention_metadata
+      t.timestamps
+
+      t.index [:social_media_account_id, :platform_mention_id], unique: true, name: 'idx_mentions_account_platform'
+      t.index [:from_user_id, :mentioned_at]
+      t.index [:influence_level, :is_influencer]
+      t.index [:sentiment_label, :sentiment_score]
+      t.index [:contains_product_mention, :mentioned_products], name: 'idx_mentions_product_mentions'
+      t.index [:status, :processed_at]
+      t.index [:requires_response, :notification_sent_at]
+      t.index [:mentioned_at, :created_at]
+    end
+  end
+end

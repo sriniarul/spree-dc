@@ -1,0 +1,700 @@
+<% content_for :page_title do %>
+  Instagram Analytics Dashboard
+<% end %>
+
+<!-- Analytics Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Instagram Analytics</h1>
+    <p class="text-muted mb-0">
+      Track your Instagram performance and engagement metrics
+    </p>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-outline-primary" data-period="7">7 days</button>
+    <button class="btn btn-primary" data-period="30">30 days</button>
+    <button class="btn btn-outline-primary" data-period="90">90 days</button>
+  </div>
+</div>
+
+<!-- Account Selector -->
+<% if @instagram_accounts.size > 1 %>
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <label for="accountSelector" class="form-label">Select Instagram Account</label>
+          <select class="form-select" id="accountSelector" onchange="switchAccount(this.value)">
+            <% @instagram_accounts.each do |account| %>
+              <option value="<%= account.id %>" <%= 'selected' if account.id == @current_account.id %>>
+                @<%= account.username %> (<%= pluralize(account.followers_count || 0, 'follower') %>)
+              </option>
+            <% end %>
+          </select>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <small class="text-muted">
+            Last updated: <%= @current_account.analytics_synced_at&.strftime('%B %d, %Y at %I:%M %p') || 'Never' %>
+          </small>
+          <br>
+          <button class="btn btn-sm btn-outline-info mt-1" onclick="syncAnalytics('<%= @current_account.id %>')">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Key Metrics Cards -->
+<div class="row mb-4">
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="card bg-primary text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="mb-0"><%= number_with_delimiter(@analytics_summary[:total_followers] || 0) %></h3>
+            <p class="mb-0 small">Total Followers</p>
+          </div>
+          <i class="fas fa-users fa-2x opacity-50"></i>
+        </div>
+        <% if @analytics_summary[:follower_growth] %>
+          <div class="mt-2">
+            <span class="badge bg-<%= @analytics_summary[:follower_growth] >= 0 ? 'success' : 'danger' %>">
+              <i class="fas fa-arrow-<%= @analytics_summary[:follower_growth] >= 0 ? 'up' : 'down' %>"></i>
+              <%= @analytics_summary[:follower_growth] %>%
+            </span>
+            <small class="ms-1">vs last period</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="card bg-info text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="mb-0"><%= number_with_delimiter(@analytics_summary[:total_reach] || 0) %></h3>
+            <p class="mb-0 small">Total Reach</p>
+          </div>
+          <i class="fas fa-eye fa-2x opacity-50"></i>
+        </div>
+        <% if @analytics_summary[:reach_growth] %>
+          <div class="mt-2">
+            <span class="badge bg-<%= @analytics_summary[:reach_growth] >= 0 ? 'success' : 'danger' %>">
+              <i class="fas fa-arrow-<%= @analytics_summary[:reach_growth] >= 0 ? 'up' : 'down' %>"></i>
+              <%= @analytics_summary[:reach_growth] %>%
+            </span>
+            <small class="ms-1">vs last period</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="card bg-success text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="mb-0"><%= number_with_delimiter(@analytics_summary[:total_engagement] || 0) %></h3>
+            <p class="mb-0 small">Total Engagement</p>
+          </div>
+          <i class="fas fa-heart fa-2x opacity-50"></i>
+        </div>
+        <% if @analytics_summary[:engagement_growth] %>
+          <div class="mt-2">
+            <span class="badge bg-<%= @analytics_summary[:engagement_growth] >= 0 ? 'success' : 'danger' %>">
+              <i class="fas fa-arrow-<%= @analytics_summary[:engagement_growth] >= 0 ? 'up' : 'down' %>"></i>
+              <%= @analytics_summary[:engagement_growth] %>%
+            </span>
+            <small class="ms-1">vs last period</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="card bg-warning text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="mb-0"><%= @analytics_summary[:engagement_rate] || 0 %>%</h3>
+            <p class="mb-0 small">Engagement Rate</p>
+          </div>
+          <i class="fas fa-chart-line fa-2x opacity-50"></i>
+        </div>
+        <div class="mt-2">
+          <small>
+            <% if (@analytics_summary[:engagement_rate] || 0) > 3 %>
+              <i class="fas fa-check-circle me-1"></i>Excellent
+            <% elsif (@analytics_summary[:engagement_rate] || 0) > 1 %>
+              <i class="fas fa-thumbs-up me-1"></i>Good
+            <% else %>
+              <i class="fas fa-exclamation-triangle me-1"></i>Needs improvement
+            <% end %>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+  <!-- Performance Over Time Chart -->
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Performance Over Time</h5>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-secondary" data-metric="reach">Reach</button>
+          <button class="btn btn-primary" data-metric="engagement">Engagement</button>
+          <button class="btn btn-outline-secondary" data-metric="impressions">Impressions</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <canvas id="performanceChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Performance -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Content Type Performance</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="contentTypeChart" height="150"></canvas>
+
+        <div class="mt-3">
+          <% @content_type_performance.each do |type, metrics| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <span class="badge bg-primary me-2"><%= type.humanize %></span>
+                <small class="text-muted"><%= pluralize(metrics[:posts_count], 'post') %></small>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold"><%= metrics[:engagement_rate] %>%</div>
+                <small class="text-muted">avg engagement</small>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Insights and Top Content -->
+<div class="row mb-4">
+  <!-- Best Performing Posts -->
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Top Performing Posts</h5>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            Sort by Engagement Rate
+          </button>
+          <ul class="dropdown-menu">
+            <li><button class="dropdown-item" onclick="sortPosts('engagement_rate')">Engagement Rate</button></li>
+            <li><button class="dropdown-item" onclick="sortPosts('reach')">Reach</button></li>
+            <li><button class="dropdown-item" onclick="sortPosts('impressions')">Impressions</button></li>
+            <li><button class="dropdown-item" onclick="sortPosts('likes')">Likes</button></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-body">
+        <% if @top_posts.any? %>
+          <div id="topPostsList">
+            <% @top_posts.each_with_index do |post, index| %>
+              <div class="post-item mb-3 p-3 border rounded">
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="d-flex align-items-start">
+                      <div class="me-3">
+                        <div class="badge bg-primary rounded-pill"><%= index + 1 %></div>
+                      </div>
+                      <div class="flex-grow-1">
+                        <p class="mb-2"><%= post[:caption] %></p>
+                        <div class="small text-muted">
+                          <i class="fas fa-calendar me-1"></i>
+                          <%= post[:published_at].strftime('%B %d, %Y at %I:%M %p') %>
+                          <span class="badge bg-info ms-2"><%= post[:content_type].humanize %></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="row text-center">
+                      <div class="col-6">
+                        <div class="fw-bold text-primary"><%= number_with_delimiter(post[:metrics][:reach]) %></div>
+                        <small class="text-muted">Reach</small>
+                      </div>
+                      <div class="col-6">
+                        <div class="fw-bold text-success"><%= post[:metrics][:engagement_rate] %>%</div>
+                        <small class="text-muted">Engagement</small>
+                      </div>
+                    </div>
+                    <div class="row text-center mt-2">
+                      <div class="col-4">
+                        <div class="small">
+                          <i class="fas fa-heart text-danger"></i>
+                          <%= post[:metrics][:likes] %>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="small">
+                          <i class="fas fa-comment text-primary"></i>
+                          <%= post[:metrics][:comments] %>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="small">
+                          <i class="fas fa-share text-info"></i>
+                          <%= post[:metrics][:shares] %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-chart-bar fa-3x text-muted"></i>
+            <h6 class="text-muted mt-3">No performance data available</h6>
+            <p class="text-muted">Publish posts and sync analytics to see performance data here.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Insights -->
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Key Insights</h5>
+      </div>
+      <div class="card-body">
+        <% if @key_insights.any? %>
+          <% @key_insights.each_with_index do |insight, index| %>
+            <div class="insight-item mb-3">
+              <div class="d-flex">
+                <div class="me-2">
+                  <i class="fas fa-lightbulb text-warning"></i>
+                </div>
+                <div class="small">
+                  <%= insight %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted small">Connect your Instagram account and sync analytics to see key insights.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Recommendations</h5>
+      </div>
+      <div class="card-body">
+        <% if @recommendations.any? %>
+          <% @recommendations.each do |rec| %>
+            <div class="recommendation-item mb-3">
+              <div class="d-flex">
+                <div class="me-2">
+                  <i class="fas fa-<%= rec[:priority] == 'high' ? 'exclamation-circle text-danger' : rec[:priority] == 'medium' ? 'info-circle text-warning' : 'check-circle text-success' %>"></i>
+                </div>
+                <div>
+                  <div class="small fw-medium text-<%= rec[:priority] == 'high' ? 'danger' : rec[:priority] == 'medium' ? 'warning' : 'success' %>">
+                    <%= rec[:type].humanize %>
+                  </div>
+                  <div class="small">
+                    <%= rec[:message] %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted small">Publish more content to receive personalized recommendations.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Additional Analytics -->
+<div class="row">
+  <!-- Posting Schedule Analysis -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Best Posting Times</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="postingTimesChart" height="120"></canvas>
+        <div class="mt-3">
+          <small class="text-muted">
+            <i class="fas fa-info-circle me-1"></i>
+            Based on your historical engagement data. Times shown in your local timezone.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hashtag Performance -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Hashtag Performance</h5>
+        <button class="btn btn-sm btn-outline-primary" onclick="analyzeHashtags()">
+          <i class="fas fa-hashtag me-1"></i>Analyze
+        </button>
+      </div>
+      <div class="card-body">
+        <% if @hashtag_performance.any? %>
+          <div id="hashtagList">
+            <% @hashtag_performance.each do |hashtag_data| %>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <span class="fw-medium">#<%= hashtag_data[:hashtag] %></span>
+                  <small class="text-muted ms-2">
+                    used <%= pluralize(hashtag_data[:usage_count], 'time') %>
+                  </small>
+                </div>
+                <div class="text-end">
+                  <div class="small fw-bold text-primary"><%= hashtag_data[:avg_engagement] %></div>
+                  <small class="text-muted">avg engagement</small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-hashtag fa-2x text-muted"></i>
+            <p class="text-muted mt-2 small">No hashtag data available yet.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export Options -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-1">Export Analytics Data</h6>
+            <small class="text-muted">Download detailed analytics reports in various formats</small>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-outline-primary btn-sm" onclick="exportData('csv')">
+              <i class="fas fa-file-csv me-1"></i>CSV
+            </button>
+            <button class="btn btn-outline-primary btn-sm" onclick="exportData('excel')">
+              <i class="fas fa-file-excel me-1"></i>Excel
+            </button>
+            <button class="btn btn-outline-primary btn-sm" onclick="exportData('pdf')">
+              <i class="fas fa-file-pdf me-1"></i>PDF Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center py-4">
+        <div class="spinner-border text-primary mb-3"></div>
+        <div>Syncing analytics data...</div>
+        <small class="text-muted">This may take a few moments</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  initializeCharts();
+  setupEventHandlers();
+});
+
+let performanceChart, contentTypeChart, postingTimesChart;
+
+function initializeCharts() {
+  // Performance Over Time Chart
+  const performanceCtx = document.getElementById('performanceChart');
+  if (performanceCtx) {
+    performanceChart = new Chart(performanceCtx, {
+      type: 'line',
+      data: {
+        labels: <%= raw @chart_data[:labels].to_json %>,
+        datasets: [{
+          label: 'Engagement',
+          data: <%= raw @chart_data[:engagement].to_json %>,
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          tension: 0.1,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  // Content Type Performance Chart
+  const contentTypeCtx = document.getElementById('contentTypeChart');
+  if (contentTypeCtx) {
+    contentTypeChart = new Chart(contentTypeCtx, {
+      type: 'doughnut',
+      data: {
+        labels: <%= raw @content_type_performance.keys.map(&:humanize).to_json %>,
+        datasets: [{
+          data: <%= raw @content_type_performance.values.map { |v| v[:engagement_rate] }.to_json %>,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.8)',
+            'rgba(54, 162, 235, 0.8)',
+            'rgba(255, 205, 86, 0.8)',
+            'rgba(75, 192, 192, 0.8)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  }
+
+  // Posting Times Chart
+  const postingTimesCtx = document.getElementById('postingTimesChart');
+  if (postingTimesCtx) {
+    postingTimesChart = new Chart(postingTimesCtx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw (0..23).map { |h| "#{h}:00" }.to_json %>,
+        datasets: [{
+          label: 'Avg Engagement Rate',
+          data: <%= raw @posting_times_data.to_json %>,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Engagement Rate (%)'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Hour of Day'
+            }
+          }
+        }
+      }
+    });
+  }
+}
+
+function setupEventHandlers() {
+  // Period selector
+  document.querySelectorAll('[data-period]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const period = this.dataset.period;
+      changePeriod(period);
+    });
+  });
+
+  // Metric selector for performance chart
+  document.querySelectorAll('[data-metric]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const metric = this.dataset.metric;
+      updatePerformanceChart(metric);
+
+      // Update active button
+      document.querySelectorAll('[data-metric]').forEach(b => b.classList.remove('btn-primary'));
+      document.querySelectorAll('[data-metric]').forEach(b => b.classList.add('btn-outline-secondary'));
+      this.classList.remove('btn-outline-secondary');
+      this.classList.add('btn-primary');
+    });
+  });
+}
+
+function switchAccount(accountId) {
+  window.location.href = `?account_id=${accountId}`;
+}
+
+function changePeriod(days) {
+  window.location.href = `?period=${days}`;
+}
+
+function updatePerformanceChart(metric) {
+  if (!performanceChart) return;
+
+  fetch(`/admin/social_media/analytics/chart_data?metric=${metric}&account_id=<%= @current_account.id %>`)
+    .then(response => response.json())
+    .then(data => {
+      performanceChart.data.datasets[0].data = data.values;
+      performanceChart.data.datasets[0].label = metric.charAt(0).toUpperCase() + metric.slice(1);
+      performanceChart.update();
+    })
+    .catch(error => console.error('Error updating chart:', error));
+}
+
+function syncAnalytics(accountId) {
+  const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+  modal.show();
+
+  fetch(`/admin/social_media/accounts/${accountId}/sync_analytics`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    modal.hide();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Failed to sync analytics: ' + data.error);
+    }
+  })
+  .catch(error => {
+    modal.hide();
+    console.error('Error syncing analytics:', error);
+    alert('Failed to sync analytics. Please try again.');
+  });
+}
+
+function sortPosts(metric) {
+  // This would make an AJAX call to resort posts
+  fetch(`/admin/social_media/analytics/top_posts?sort=${metric}&account_id=<%= @current_account.id %>`)
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('topPostsList').innerHTML = html;
+    });
+}
+
+function analyzeHashtags() {
+  fetch(`/admin/social_media/analytics/hashtag_analysis?account_id=<%= @current_account.id %>`)
+    .then(response => response.json())
+    .then(data => {
+      updateHashtagList(data.hashtags);
+    })
+    .catch(error => console.error('Error analyzing hashtags:', error));
+}
+
+function updateHashtagList(hashtags) {
+  const list = document.getElementById('hashtagList');
+  list.innerHTML = '';
+
+  hashtags.forEach(hashtag => {
+    const item = document.createElement('div');
+    item.className = 'd-flex justify-content-between align-items-center mb-2';
+    item.innerHTML = `
+      <div>
+        <span class="fw-medium">#${hashtag.name}</span>
+        <small class="text-muted ms-2">used ${hashtag.count} times</small>
+      </div>
+      <div class="text-end">
+        <div class="small fw-bold text-primary">${hashtag.avg_engagement}</div>
+        <small class="text-muted">avg engagement</small>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function exportData(format) {
+  const url = `/admin/social_media/analytics/export?format=${format}&account_id=<%= @current_account.id %>&period=<%= params[:period] || 30 %>`;
+  window.open(url, '_blank');
+}
+</script>
+
+<style>
+.insight-item, .recommendation-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.insight-item:last-child, .recommendation-item:last-child {
+  border-bottom: none;
+}
+
+.post-item {
+  transition: box-shadow 0.2s ease;
+}
+
+.post-item:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-body canvas {
+  max-height: 300px;
+}
+
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+@media (max-width: 768px) {
+  .card-body .row .col-md-4 {
+    margin-top: 1rem;
+  }
+}
+</style>

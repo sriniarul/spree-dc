@@ -1,0 +1,12 @@
+<div class="dropdown-item" data-bulk-operation-target="dropdownItem">
+  <%= link_to bulk_new_admin_social_media_product_posts_path,
+              method: :get,
+              data: {
+                'bulk-operation-target': 'dropdownLink',
+                action: 'click->bulk-operation#prepareForm'
+              },
+              class: 'text-decoration-none text-dark d-flex align-items-center' do %>
+    <i class="fa fa-share-alt mr-2"></i>
+    <%= Spree.t('admin.social_media.bulk_post_to_social_media') %>
+  <% end %>
+</div>

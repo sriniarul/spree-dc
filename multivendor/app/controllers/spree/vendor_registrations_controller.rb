@@ -23,6 +23,8 @@ module Spree
         ActiveRecord::Base.transaction do
           @user.save!
           @vendor.user = @user
+          @vendor.email = @user.email
+          @vendor.phone = @vendor.phone_number
           @vendor.save!
 
           # Send confirmation emails

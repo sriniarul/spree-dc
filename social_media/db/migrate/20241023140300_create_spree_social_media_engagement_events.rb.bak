@@ -1,0 +1,35 @@
+class CreateSpreeSocialMediaEngagementEvents < ActiveRecord::Migration[7.2]
+  def change
+    create_table :spree_social_media_engagement_events do |t|
+      t.references :social_media_account, null: false, foreign_key: { to_table: :spree_social_media_accounts }
+      t.references :social_media_post, null: true, foreign_key: { to_table: :spree_social_media_posts }
+      t.string :platform_event_id, null: false
+      t.string :event_type, null: false
+      t.string :event_subtype
+      t.string :from_user_id
+      t.string :from_user_username
+      t.integer :from_user_followers_count
+      t.json :from_user_data
+      t.string :target_type
+      t.string :target_id
+      t.json :event_data
+      t.string :engagement_value
+      t.integer :engagement_score, default: 0
+      t.boolean :is_positive_engagement, default: true
+      t.string :influence_level
+      t.boolean :is_influencer_event, default: false
+      t.json :engagement_metadata
+      t.datetime :occurred_at, null: false
+      t.timestamps
+
+      t.index [:social_media_account_id, :platform_event_id], unique: true, name: 'idx_engagement_account_platform'
+      t.index [:social_media_post_id, :event_type, :occurred_at]
+      t.index [:event_type, :event_subtype, :occurred_at]
+      t.index [:from_user_id, :occurred_at]
+      t.index [:is_influencer_event, :influence_level, :occurred_at]
+      t.index [:is_positive_engagement, :engagement_score]
+      t.index [:target_type, :target_id]
+      t.index [:occurred_at, :created_at]
+    end
+  end
+end
