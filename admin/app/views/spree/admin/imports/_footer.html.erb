@@ -1,0 +1,15 @@
+<footer id="footer">
+  <% if import.rows.any? %>
+    <div class="flex-grow-1 d-flex flex-column">  
+      <%= progress_bar_component(import.rows.processed.count, min: 0, max: import.rows_count) %>
+    </div>
+
+    <div>
+      <%= import.rows.processed.count %> / <%= import.rows_count %> rows processed
+    </div>
+  <% elsif import.status != 'failed' %>
+    <div>
+      <%= Spree.t('admin.imports.waiting_for_file_to_be_processed') %>
+    </div>
+  <% end %>
+</footer>
